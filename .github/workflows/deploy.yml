@@ -44,32 +44,6 @@ jobs:
       run: |
         aws ecs register-task-definition --cli-input-json file://task-definition.json
         
-    - name: Create ECS Service if not exists
+    - name: Update ECS Service
       run: |
-        # Get default VPC and subnets
-        VPC_ID=$(aws ec2 describe-vpcs --filters "Name=is-default,Values=true" --query 'Vpcs[0].VpcId' --output text)
-        SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[0:2].SubnetId' --output text)
-        SUBNET_1=$(echo $SUBNET_IDS | cut -d' ' -f1)
-        SUBNET_2=$(echo $SUBNET_IDS | cut -d' ' -f2)
-        
-        # Create security group if not exists
-        SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=cinema-sg" --query 'SecurityGroups[0].GroupId' --output text 2>/dev/null || echo "None")
-        if [ "$SG_ID" = "None" ]; then
-          SG_ID=$(aws ec2 create-security-group --group-name cinema-sg --description "Cinema app" --vpc-id $VPC_ID --query 'GroupId' --output text)
-          aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
-        fi
-        
-        # Create log group if not exists
-        aws logs create-log-group --log-group-name /ecs/cinema-backend 2>/dev/null || true
-        
-        # Try to update service, create if not exists
-        if ! aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment 2>/dev/null; then
-          echo "Creating new ECS service..."
-          aws ecs create-service \
-            --cluster $ECS_CLUSTER \
-            --service-name $ECS_SERVICE \
-            --task-definition cinema-backend \
-            --desired-count 1 \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_1,$SUBNET_2],securityGroups=[$SG_ID],assignPublicIp=ENABLED}"
-        fi
+        aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment

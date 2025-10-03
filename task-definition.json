@@ -1,14 +1,16 @@
 {
   "family": "cinema-backend",
   "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::139561978711:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "cinema-backend",
-      "image": "YOUR_ACCOUNT_ID.dkr.ecr.ap-southeast-1.amazonaws.com/cinema-backend:latest",
+      "image": "139561978711.dkr.ecr.ap-southeast-1.amazonaws.com/cinema-backend:latest",
       "portMappings": [
         {
           "containerPort": 80,
@@ -27,7 +29,7 @@
         },
         {
           "name": "DB_HOST",
-          "value": "cinema-db.YOUR_RDS_ENDPOINT.ap-southeast-1.rds.amazonaws.com"
+          "value": "cinema-database.cl6me2ouqtxn.ap-southeast-1.rds.amazonaws.com"
         },
         {
           "name": "DB_DATABASE",
@@ -39,7 +41,7 @@
         },
         {
           "name": "DB_PASSWORD",
-          "value": "YourPassword123"
+          "value": "adminadmin"
         }
       ],
       "logConfiguration": {

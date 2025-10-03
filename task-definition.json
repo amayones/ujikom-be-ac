@@ -24,6 +24,14 @@
           "value": "production"
         },
         {
+          "name": "APP_KEY",
+          "value": "base64:5vbe1uyxt5HkRfw3yKme5qW3igWM56y/ZKknopX8TN8="
+        },
+        {
+          "name": "APP_DEBUG",
+          "value": "false"
+        },
+        {
           "name": "DB_CONNECTION",
           "value": "mysql"
         },
@@ -42,6 +50,10 @@
         {
           "name": "DB_PASSWORD",
           "value": "adminadmin"
+        },
+        {
+          "name": "LOG_CHANNEL",
+          "value": "stderr"
         }
       ],
       "logConfiguration": {

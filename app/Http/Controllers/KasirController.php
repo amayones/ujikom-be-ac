@@ -23,6 +23,7 @@ class KasirController extends Controller
         ]);
 
         $order = Order::create([
+            'user_id' => null, // Offline booking doesn't have user_id
             'schedule_id' => $validated['schedule_id'],
             'tanggal_pesan' => now(),
             'status' => 'confirmed',
@@ -61,7 +62,7 @@ class KasirController extends Controller
         $ticketData = [
             'order_id' => $order->id,
             'film' => $order->schedule->film->judul,
-            'studio' => $order->schedule->studio->nama,
+            'studio' => $order->schedule->studio->nama_studio,
             'date' => $order->schedule->tanggal,
             'time' => $order->schedule->jam,
             'seats' => $order->orderDetails->pluck('seat_number'),

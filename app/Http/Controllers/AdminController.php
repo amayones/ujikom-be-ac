@@ -113,11 +113,14 @@ class AdminController extends Controller
     public function storePrice(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string',
+            'tipe' => 'required|string',
             'harga' => 'required|numeric'
         ]);
 
-        $price = Price::create($validated);
+        $price = Price::create([
+            ...$validated,
+            'created_by' => Auth::id()
+        ]);
         return response()->json(['price' => $price], 201);
     }
 
@@ -155,8 +158,7 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'studio_id' => 'required|exists:studios,id',
-            'nomor_kursi' => 'required|string',
-            'tipe' => 'required|string'
+            'kode_kursi' => 'required|string'
         ]);
 
         $seat = StudioSeat::create($validated);

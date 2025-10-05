@@ -19,11 +19,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'nama',
+        'name',
         'email',
         'password',
-        'no_hp',
-        'alamat',
+        'phone',
+        'address',
         'role',
     ];
 
@@ -49,15 +49,10 @@ class User extends Authenticatable
         ];
     }
 
-    public function getNameAttribute()
-    {
-        return $this->nama;
-    }
-
     // Role checking methods
-    public function isPelanggan()
+    public function isCustomer()
     {
-        return $this->role === 'pelanggan';
+        return $this->role === 'customer';
     }
 
     public function isAdmin()
@@ -70,9 +65,9 @@ class User extends Authenticatable
         return $this->role === 'owner';
     }
 
-    public function isKasir()
+    public function isCashier()
     {
-        return $this->role === 'kasir';
+        return $this->role === 'cashier';
     }
 
     // Relationships
@@ -81,9 +76,9 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    public function kasirOrders()
+    public function cashierOrders()
     {
-        return $this->hasMany(Order::class, 'kasir_id');
+        return $this->hasMany(Order::class, 'cashier_id');
     }
 
     public function createdFilms()

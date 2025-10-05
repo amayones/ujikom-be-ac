@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Film extends Model
 {
     protected $fillable = [
-        'judul',
+        'title',
         'genre',
-        'durasi',
-        'deskripsi',
+        'duration',
+        'description',
         'status',
         'poster',
         'created_by',

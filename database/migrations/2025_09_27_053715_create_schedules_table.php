@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('film_id')->constrained('films');
             $table->foreignId('studio_id')->constrained('studios');
-            $table->date('tanggal');
-            $table->time('jam');
-            $table->foreignId('harga_id')->constrained('prices');
+            $table->date('date');
+            $table->time('time');
+            $table->foreignId('price_id')->constrained('prices');
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });

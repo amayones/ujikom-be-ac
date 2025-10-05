@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Studio extends Model
 {
     protected $fillable = [
-        'nama_studio',
-        'kapasitas',
+        'name',
+        'capacity',
         'created_by',
     ];
 

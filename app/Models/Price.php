@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Price extends Model
 {
     protected $fillable = [
-        'tipe',
-        'harga',
+        'type',
+        'price',
         'created_by',
     ];
 
@@ -19,6 +19,6 @@ class Price extends Model
 
     public function schedules()
     {
-        return $this->hasMany(Schedule::class, 'harga_id');
+        return $this->hasMany(Schedule::class, 'price_id');
     }
 }

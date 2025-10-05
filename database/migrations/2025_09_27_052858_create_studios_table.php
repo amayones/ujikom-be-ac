@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('studios', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_studio');
-            $table->integer('kapasitas');
+            $table->string('name');
+            $table->integer('capacity');
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });

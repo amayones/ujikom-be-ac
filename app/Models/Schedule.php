@@ -9,9 +9,9 @@ class Schedule extends Model
     protected $fillable = [
         'film_id',
         'studio_id',
-        'tanggal',
-        'jam',
-        'harga_id',
+        'date',
+        'time',
+        'price_id',
         'created_by',
     ];
 
@@ -27,7 +27,7 @@ class Schedule extends Model
 
     public function price()
     {
-        return $this->belongsTo(Price::class, 'harga_id');
+        return $this->belongsTo(Price::class, 'price_id');
     }
 
     public function creator()

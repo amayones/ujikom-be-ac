@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Report extends Model
 {
     protected $fillable = [
-        'tipe',
-        'deskripsi',
-        'jumlah',
-        'kategori',
+        'period',
+        'total_income',
+        'total_expense',
         'owner_id',
     ];
 

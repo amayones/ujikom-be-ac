@@ -8,10 +8,10 @@ class Payment extends Model
 {
     protected $fillable = [
         'order_id',
-        'metode',
-        'jumlah',
-        'status',
-        'tanggal_bayar',
+        'method',
+        'total_amount',
+        'payment_status',
+        'payment_date',
     ];
 
     public function order()

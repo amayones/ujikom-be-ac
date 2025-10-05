@@ -9,9 +9,9 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'schedule_id',
-        'tanggal_pesan',
+        'order_date',
         'status',
-        'kasir_id',
+        'cashier_id',
     ];
 
     public function user()
@@ -24,9 +24,9 @@ class Order extends Model
         return $this->belongsTo(Schedule::class);
     }
 
-    public function kasir()
+    public function cashier()
     {
-        return $this->belongsTo(User::class, 'kasir_id');
+        return $this->belongsTo(User::class, 'cashier_id');
     }
 
     public function orderDetails()

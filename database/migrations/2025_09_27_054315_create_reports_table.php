@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->string('periode');
-            $table->decimal('total_pemasukan', 10, 2);
-            $table->decimal('total_pengeluaran', 10, 2);
+            $table->string('period');
+            $table->decimal('total_income', 10, 2);
+            $table->decimal('total_expense', 10, 2);
             $table->foreignId('owner_id')->constrained('users');
             $table->timestamps();
         });

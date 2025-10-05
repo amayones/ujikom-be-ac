@@ -18,8 +18,8 @@ Route::get('/films/{id}', [PelangganController::class, 'getFilmDetail']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Pelanggan routes (authenticated)
-    Route::middleware('role:pelanggan')->prefix('pelanggan')->group(function () {
+    // Customer routes (authenticated)
+    Route::middleware('role:customer')->prefix('customer')->group(function () {
         Route::get('/schedules/{filmId}', [PelangganController::class, 'getSchedules']);
         Route::get('/seats/{scheduleId}', [PelangganController::class, 'getAvailableSeats']);
         Route::post('/book', [PelangganController::class, 'bookTicket']);
@@ -63,8 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/expenses', [OwnerController::class, 'addExpense']);
     });
 
-    // Kasir routes
-    Route::middleware('role:kasir')->prefix('kasir')->group(function () {
+    // Cashier routes
+    Route::middleware('role:cashier')->prefix('cashier')->group(function () {
         Route::post('/book-offline', [KasirController::class, 'bookOfflineTicket']);
         Route::get('/print-ticket/{orderId}', [KasirController::class, 'printTicket']);
         Route::get('/online-orders', [KasirController::class, 'getOnlineOrders']);

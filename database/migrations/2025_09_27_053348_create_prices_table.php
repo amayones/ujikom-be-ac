@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('prices', function (Blueprint $table) {
             $table->id();
-            $table->string('tipe');
-            $table->decimal('harga', 10, 2);
+            $table->string('type');
+            $table->decimal('price', 10, 2);
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
         });

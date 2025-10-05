@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('studio_seats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('studio_id')->constrained('studios');
-            $table->string('kode_kursi');
+            $table->string('seat_code');
             $table->timestamps();
         });
     }

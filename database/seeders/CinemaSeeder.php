@@ -29,8 +29,7 @@ class CinemaSeeder extends Seeder
         for ($i = 1; $i <= 50; $i++) {
             StudioSeat::create([
                 'studio_id' => $studio1->id,
-                'nomor_kursi' => 'A' . $i,
-                'tipe' => 'regular'
+                'kode_kursi' => 'A' . $i
             ]);
         }
 
@@ -38,8 +37,7 @@ class CinemaSeeder extends Seeder
         for ($i = 1; $i <= 30; $i++) {
             StudioSeat::create([
                 'studio_id' => $studio2->id,
-                'nomor_kursi' => 'B' . $i,
-                'tipe' => 'regular'
+                'kode_kursi' => 'B' . $i
             ]);
         }
 

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('schedule_id')->constrained('schedules');
             $table->datetime('tanggal_pesan');
             $table->string('status');
-            $table->foreignId('kasir_id')->constrained('users');
+            $table->foreignId('kasir_id')->nullable()->constrained('users');
             $table->timestamps();
         });
     }

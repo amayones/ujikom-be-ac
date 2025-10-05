@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Price extends Model
 {
     protected $fillable = [
-        'nama',
+        'tipe',
         'harga',
         'created_by',
     ];

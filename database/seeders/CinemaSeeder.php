@@ -14,13 +14,13 @@ class CinemaSeeder extends Seeder
     {
         // Create Studios
         $studio1 = Studio::create([
-            'nama' => 'Studio 1',
+            'nama_studio' => 'Studio 1',
             'kapasitas' => 50,
             'created_by' => 1
         ]);
 
         $studio2 = Studio::create([
-            'nama' => 'Studio 2',
+            'nama_studio' => 'Studio 2',
             'kapasitas' => 30,
             'created_by' => 1
         ]);
@@ -45,13 +45,13 @@ class CinemaSeeder extends Seeder
 
         // Create Prices
         Price::create([
-            'nama' => 'Weekday',
+            'tipe' => 'Weekday',
             'harga' => 35000,
             'created_by' => 1
         ]);
 
         Price::create([
-            'nama' => 'Weekend',
+            'tipe' => 'Weekend',
             'harga' => 45000,
             'created_by' => 1
         ]);

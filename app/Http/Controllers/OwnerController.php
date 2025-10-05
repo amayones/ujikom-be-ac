@@ -16,16 +16,15 @@ class OwnerController extends Controller
         $endDate = $request->get('end_date', now()->endOfMonth());
 
         $income = Payment::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'success')
-            ->sum('jumlah');
+            ->where('payment_status', 'success')
+            ->sum('total_amount');
 
         $orders = Order::with(['schedule.film', 'payments'])
             ->whereBetween('created_at', [$startDate, $endDate])
             ->get();
 
         $expenses = Report::whereBetween('created_at', [$startDate, $endDate])
-            ->where('tipe', 'pengeluaran')
-            ->sum('jumlah');
+            ->sum('total_expense');
 
         return response()->json([
             'income' => $income,
@@ -44,9 +43,9 @@ class OwnerController extends Controller
         $monthlyData = Payment::select(
             DB::raw('MONTH(created_at) as month'),
             DB::raw('YEAR(created_at) as year'),
-            DB::raw('SUM(jumlah) as total_income')
+            DB::raw('SUM(total_amount) as total_income')
         )
-        ->where('status', 'success')
+        ->where('payment_status', 'success')
         ->groupBy('year', 'month')
         ->orderBy('year', 'desc')
         ->orderBy('month', 'desc')
@@ -58,16 +57,16 @@ class OwnerController extends Controller
     public function addExpense(Request $request)
     {
         $validated = $request->validate([
-            'deskripsi' => 'required|string',
-            'jumlah' => 'required|numeric',
-            'kategori' => 'required|string'
+            'description' => 'required|string',
+            'amount' => 'required|numeric',
+            'category' => 'required|string'
         ]);
 
         $expense = Report::create([
-            'tipe' => 'pengeluaran',
-            'deskripsi' => $validated['deskripsi'],
-            'jumlah' => $validated['jumlah'],
-            'kategori' => $validated['kategori']
+            'period' => now()->format('Y-m'),
+            'total_income' => 0,
+            'total_expense' => $validated['amount'],
+            'owner_id' => auth()->id()
         ]);
 
         return response()->json(['expense' => $expense], 201);

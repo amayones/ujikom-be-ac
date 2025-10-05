@@ -22,10 +22,10 @@ class AdminController extends Controller
     public function storeFilm(Request $request)
     {
         $validated = $request->validate([
-            'judul' => 'required|string',
+            'title' => 'required|string',
             'genre' => 'required|string',
-            'durasi' => 'required|integer',
-            'deskripsi' => 'required|string',
+            'duration' => 'required|integer',
+            'description' => 'required|string',
             'status' => 'required|in:play_now,coming_soon,history',
             'poster' => 'nullable|string'
         ]);
@@ -42,10 +42,10 @@ class AdminController extends Controller
     {
         $film = Film::findOrFail($id);
         $validated = $request->validate([
-            'judul' => 'string',
+            'title' => 'string',
             'genre' => 'string',
-            'durasi' => 'integer',
-            'deskripsi' => 'string',
+            'duration' => 'integer',
+            'description' => 'string',
             'status' => 'in:play_now,coming_soon,history',
             'poster' => 'nullable|string'
         ]);
@@ -63,17 +63,17 @@ class AdminController extends Controller
     // Customer Management
     public function getCustomers()
     {
-        return User::where('role', 'pelanggan')->get();
+        return User::where('role', 'customer')->get();
     }
 
     public function updateCustomer(Request $request, $id)
     {
         $user = User::findOrFail($id);
         $validated = $request->validate([
-            'nama' => 'string',
+            'name' => 'string',
             'email' => 'email|unique:users,email,' . $id,
-            'no_hp' => 'string',
-            'alamat' => 'string'
+            'phone' => 'string',
+            'address' => 'string'
         ]);
 
         $user->update($validated);
@@ -91,9 +91,9 @@ class AdminController extends Controller
         $validated = $request->validate([
             'film_id' => 'required|exists:films,id',
             'studio_id' => 'required|exists:studios,id',
-            'tanggal' => 'required|date',
-            'jam' => 'required|string',
-            'harga_id' => 'required|exists:prices,id'
+            'date' => 'required|date',
+            'time' => 'required|string',
+            'price_id' => 'required|exists:prices,id'
         ]);
 
         $schedule = Schedule::create([
@@ -113,8 +113,8 @@ class AdminController extends Controller
     public function storePrice(Request $request)
     {
         $validated = $request->validate([
-            'tipe' => 'required|string',
-            'harga' => 'required|numeric'
+            'type' => 'required|string',
+            'price' => 'required|numeric'
         ]);
 
         $price = Price::create([
@@ -127,22 +127,22 @@ class AdminController extends Controller
     // Cashier Management
     public function getCashiers()
     {
-        return User::where('role', 'kasir')->get();
+        return User::where('role', 'cashier')->get();
     }
 
     public function storeCashier(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string',
+            'name' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'no_hp' => 'required|string',
-            'alamat' => 'required|string'
+            'phone' => 'required|string',
+            'address' => 'required|string'
         ]);
 
         $cashier = User::create([
             ...$validated,
-            'role' => 'kasir'
+            'role' => 'cashier'
         ]);
 
         return response()->json(['cashier' => $cashier], 201);
@@ -158,7 +158,7 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'studio_id' => 'required|exists:studios,id',
-            'kode_kursi' => 'required|string'
+            'seat_code' => 'required|string'
         ]);
 
         $seat = StudioSeat::create($validated);

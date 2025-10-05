@@ -10,7 +10,7 @@ use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class KasirController extends Controller
+class CashierController extends Controller
 {
     public function bookOfflineTicket(Request $request)
     {
@@ -25,9 +25,9 @@ class KasirController extends Controller
         $order = Order::create([
             'user_id' => null, // Offline booking doesn't have user_id
             'schedule_id' => $validated['schedule_id'],
-            'tanggal_pesan' => now(),
+            'order_date' => now(),
             'status' => 'confirmed',
-            'kasir_id' => Auth::id()
+            'cashier_id' => Auth::id()
         ]);
 
         foreach ($validated['seat_ids'] as $seatId) {
@@ -36,13 +36,14 @@ class KasirController extends Controller
 
         // Create payment record
         $schedule = Schedule::with('price')->find($validated['schedule_id']);
-        $totalAmount = $schedule->price->harga * count($validated['seat_ids']);
+        $totalAmount = $schedule->price->price * count($validated['seat_ids']);
 
         $payment = Payment::create([
             'order_id' => $order->id,
-            'jumlah' => $totalAmount,
-            'metode' => 'cash',
-            'status' => 'success'
+            'total_amount' => $totalAmount,
+            'method' => 'cash',
+            'payment_status' => 'success',
+            'payment_date' => now()
         ]);
 
         return response()->json([
@@ -61,12 +62,12 @@ class KasirController extends Controller
         // Generate ticket data for printing
         $ticketData = [
             'order_id' => $order->id,
-            'film' => $order->schedule->film->judul,
-            'studio' => $order->schedule->studio->nama_studio,
-            'date' => $order->schedule->tanggal,
-            'time' => $order->schedule->jam,
+            'film' => $order->schedule->film->title,
+            'studio' => $order->schedule->studio->name,
+            'date' => $order->schedule->date,
+            'time' => $order->schedule->time,
             'seats' => $order->orderDetails->pluck('seat_number'),
-            'total_amount' => $order->payments->sum('jumlah')
+            'total_amount' => $order->payments->sum('total_amount')
         ];
 
         return response()->json(['ticket' => $ticketData]);
@@ -86,9 +87,9 @@ class KasirController extends Controller
             // Create invoice
             $invoice = Invoice::create([
                 'order_id' => $order->id,
-                'nomor_invoice' => 'INV-' . time(),
-                'tanggal' => now(),
-                'total' => $order->payments->sum('jumlah')
+                'invoice_number' => 'INV-' . time(),
+                'invoice_date' => now(),
+                'total' => $order->payments->sum('total_amount')
             ]);
 
             return response()->json(['order' => $order, 'invoice' => $invoice]);
@@ -108,7 +109,7 @@ class KasirController extends Controller
     {
         return Order::with(['schedule.film', 'user'])
             ->where('status', 'pending')
-            ->whereNull('kasir_id')
+            ->whereNull('cashier_id')
             ->get();
     }
 }

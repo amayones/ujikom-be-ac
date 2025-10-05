@@ -9,7 +9,7 @@ use App\Models\ScheduleSeat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class PelangganController extends Controller
+class CustomerController extends Controller
 {
     public function getFilms(Request $request)
     {
@@ -26,7 +26,7 @@ class PelangganController extends Controller
     {
         return Schedule::with(['studio', 'price'])
             ->where('film_id', $filmId)
-            ->where('tanggal', '>=', now()->toDateString())
+            ->where('date', '>=', now()->toDateString())
             ->get();
     }
 
@@ -48,7 +48,7 @@ class PelangganController extends Controller
         $order = Order::create([
             'user_id' => Auth::id(),
             'schedule_id' => $validated['schedule_id'],
-            'tanggal_pesan' => now(),
+            'order_date' => now(),
             'status' => 'pending'
         ]);
 
@@ -70,9 +70,9 @@ class PelangganController extends Controller
     public function updateProfile(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'string',
-            'no_hp' => 'string',
-            'alamat' => 'string'
+            'name' => 'string',
+            'phone' => 'string',
+            'address' => 'string'
         ]);
 
         Auth::user()->update($validated);

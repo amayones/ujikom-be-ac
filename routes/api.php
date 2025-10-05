@@ -2,29 +2,29 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OwnerController;
-use App\Http\Controllers\KasirController;
+use App\Http\Controllers\CashierController;
 
 // Auth routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 // Public routes (no auth required)
-Route::get('/films', [PelangganController::class, 'getFilms']);
-Route::get('/films/{id}', [PelangganController::class, 'getFilmDetail']);
+Route::get('/films', [CustomerController::class, 'getFilms']);
+Route::get('/films/{id}', [CustomerController::class, 'getFilmDetail']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Customer routes (authenticated)
     Route::middleware('role:customer')->prefix('customer')->group(function () {
-        Route::get('/schedules/{filmId}', [PelangganController::class, 'getSchedules']);
-        Route::get('/seats/{scheduleId}', [PelangganController::class, 'getAvailableSeats']);
-        Route::post('/book', [PelangganController::class, 'bookTicket']);
-        Route::get('/orders', [PelangganController::class, 'getOrderHistory']);
-        Route::put('/profile', [PelangganController::class, 'updateProfile']);
+        Route::get('/schedules/{filmId}', [CustomerController::class, 'getSchedules']);
+        Route::get('/seats/{scheduleId}', [CustomerController::class, 'getAvailableSeats']);
+        Route::post('/book', [CustomerController::class, 'bookTicket']);
+        Route::get('/orders', [CustomerController::class, 'getOrderHistory']);
+        Route::put('/profile', [CustomerController::class, 'updateProfile']);
     });
 
     // Admin routes
@@ -65,9 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Cashier routes
     Route::middleware('role:cashier')->prefix('cashier')->group(function () {
-        Route::post('/book-offline', [KasirController::class, 'bookOfflineTicket']);
-        Route::get('/print-ticket/{orderId}', [KasirController::class, 'printTicket']);
-        Route::get('/online-orders', [KasirController::class, 'getOnlineOrders']);
-        Route::put('/process-order/{orderId}', [KasirController::class, 'processOnlineTicket']);
+        Route::post('/book-offline', [CashierController::class, 'bookOfflineTicket']);
+        Route::get('/print-ticket/{orderId}', [CashierController::class, 'printTicket']);
+        Route::get('/online-orders', [CashierController::class, 'getOnlineOrders']);
+        Route::put('/process-order/{orderId}', [CashierController::class, 'processOnlineTicket']);
     });
 });

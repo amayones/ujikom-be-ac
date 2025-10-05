@@ -11,13 +11,15 @@ use App\Http\Controllers\KasirController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
+// Public routes (no auth required)
+Route::get('/films', [PelangganController::class, 'getFilms']);
+Route::get('/films/{id}', [PelangganController::class, 'getFilmDetail']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Pelanggan routes
+    // Pelanggan routes (authenticated)
     Route::middleware('role:pelanggan')->prefix('pelanggan')->group(function () {
-        Route::get('/films', [PelangganController::class, 'getFilms']);
-        Route::get('/films/{id}', [PelangganController::class, 'getFilmDetail']);
         Route::get('/schedules/{filmId}', [PelangganController::class, 'getSchedules']);
         Route::get('/seats/{scheduleId}', [PelangganController::class, 'getAvailableSeats']);
         Route::post('/book', [PelangganController::class, 'bookTicket']);

@@ -21,6 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/cinema-backend
+            git stash
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            docker compose -f docker-compose.ssl.yml down --remove-orphans
+            docker compose -f docker-compose.ssl.yml up -d --build

@@ -19,18 +19,11 @@ services:
       DB_USERNAME: laravel
       DB_PASSWORD: laravel
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     volumes:
-      - ./.env:/var/www/.env
+      - ./.env:/var/www/.env              # mount host .env (must exist)
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/films"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
 
   db:
     image: mysql:8.0
@@ -43,12 +36,6 @@ services:
       MYSQL_PASSWORD: laravel
     volumes:
       - cinema-db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "laravel", "-plaravel"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
 volumes:
   cinema-db-data:

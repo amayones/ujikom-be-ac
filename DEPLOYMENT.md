@@ -1,57 +1,113 @@
 # Deployment Guide
 
-## Production Deployment
+## Clean Server Setup (Fresh Start)
 
-### Prerequisites
-- Ubuntu 20.04+ server
-- Docker & Docker Compose
-- Domain with SSL certificate
-- GitHub repository access
-
-### Server Setup
-
-1. **Install Docker**
+### Step 1: Clean Existing Installation
 ```bash
+# Stop all containers
+docker stop $(docker ps -aq) 2>/dev/null || true
+docker rm $(docker ps -aq) 2>/dev/null || true
+
+# Remove all images
+docker rmi $(docker images -q) 2>/dev/null || true
+
+# Remove all volumes
+docker volume rm $(docker volume ls -q) 2>/dev/null || true
+
+# Remove project directory
+rm -rf ~/cinema-backend
+
+# Clean up SSL certificates (if exists)
+sudo rm -rf /etc/letsencrypt
+```
+
+### Step 2: Fresh Server Setup
+
+#### Prerequisites
+- Ubuntu 20.04+ EC2 instance
+- Security Group with ports 22, 80, 443 open
+- Domain pointing to EC2 IP
+
+#### Install Dependencies
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Docker
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+sudo usermod -aG docker ubuntu
+
+# Install Git
+sudo apt install -y git
+
+# Logout and login again for docker group
+exit
 ```
 
-2. **Clone Repository**
+### Step 3: Clone and Setup Project
 ```bash
-git clone https://github.com/amayones/ujikom-be-ac.git
-cd ujikom-be-ac
-```
+# Clone repository
+git clone https://github.com/amayones/ujikom-be-ac.git cinema-backend
+cd cinema-backend
 
-3. **Environment Configuration**
-```bash
+# Copy production environment
 cp .env.production .env
-# Edit .env with production values
+
+# Create SSL directory
+mkdir -p nginx/ssl
 ```
 
-4. **SSL Certificate Setup**
+### Step 4: SSL Certificate Setup
 ```bash
-sudo apt install certbot
-sudo certbot certonly --standalone -d be-ujikom.amayones.my.id
-```
+# Install Certbot
+sudo apt install -y certbot
 
-5. **Deploy with SSL**
-```bash
-# Copy SSL certificates
+# Generate SSL certificate
+sudo certbot certonly --standalone -d be-ujikom.amayones.my.id --email your-email@domain.com --agree-tos --non-interactive
+
+# Copy certificates
 sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/fullchain.pem ./nginx/ssl/cert.pem
 sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/privkey.pem ./nginx/ssl/key.pem
-sudo chown $USER:$USER ./nginx/ssl/*.pem
-
-# Start services
-docker compose -f docker-compose.ssl.yml up -d
+sudo chown ubuntu:ubuntu ./nginx/ssl/*.pem
 ```
 
-### GitHub Actions Deployment
+### Step 5: Deploy Application
+```bash
+# Start services with SSL
+docker compose -f docker-compose.ssl.yml up -d
 
-Automatic deployment configured in `.github/workflows/deploy.yml`:
+# Check status
+docker ps
+docker logs cinema-app
+docker logs cinema-nginx
+```
+
+### Step 6: Test Deployment
+```bash
+# Test HTTP (should redirect to HTTPS)
+curl -I http://be-ujikom.amayones.my.id
+
+# Test HTTPS
+curl -I https://be-ujikom.amayones.my.id
+
+# Test API endpoint
+curl https://be-ujikom.amayones.my.id/api/films
+```
+
+## GitHub Actions Auto-Deployment
+
+### Setup GitHub Secrets
+1. Go to GitHub repository → Settings → Secrets and variables → Actions
+2. Add these secrets:
+   - `EC2_HOST`: Your EC2 public IP address
+   - `EC2_SSH_KEY`: Your private SSH key content (the .pem file content)
+
+### Workflow Configuration
+The workflow is already configured in `.github/workflows/deploy.yml`:
 
 ```yaml
-name: Deploy to EC2
+name: Deploy to EC2 (Cinema Backend)
 on:
   push:
     branches: [main]
@@ -59,7 +115,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -73,9 +129,16 @@ jobs:
             docker compose -f docker-compose.ssl.yml up -d --build
 ```
 
-### Required Secrets
-- `EC2_HOST` - Server IP address
-- `EC2_SSH_KEY` - Private SSH key
+### How Auto-Deployment Works
+1. Push code to main branch
+2. GitHub Actions triggers automatically
+3. Connects to EC2 via SSH
+4. Pulls latest code
+5. Rebuilds and restarts containers
+6. Zero-downtime deployment
+
+### First Time Setup Only
+After initial server setup, every code push will automatically deploy!
 
 ### Health Checks
 

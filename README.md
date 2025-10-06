@@ -50,6 +50,66 @@ docker compose up -d
 docker compose -f docker-compose.ssl.yml up -d
 ```
 
+## 🚀 Production Deployment (EC2)
+
+### Quick Start (Fresh Server)
+
+1. **Clean existing installation** (if needed):
+```bash
+# SSH to your EC2 instance
+ssh -i your-key.pem ubuntu@your-ec2-ip
+
+# Download and run cleanup script
+wget https://raw.githubusercontent.com/amayones/ujikom-be-ac/main/scripts/clean-server.sh
+chmod +x clean-server.sh
+./clean-server.sh
+```
+
+2. **Fresh server setup**:
+```bash
+# Download and run setup script
+wget https://raw.githubusercontent.com/amayones/ujikom-be-ac/main/scripts/setup-server.sh
+chmod +x setup-server.sh
+./setup-server.sh
+
+# Logout and login again
+exit
+```
+
+3. **Deploy application**:
+```bash
+# SSH back to server
+ssh -i your-key.pem ubuntu@your-ec2-ip
+
+# Clone project
+git clone https://github.com/amayones/ujikom-be-ac.git cinema-backend
+cd cinema-backend
+
+# Setup environment
+cp .env.production .env
+mkdir -p nginx/ssl
+
+# Generate SSL certificate
+sudo certbot certonly --standalone -d be-ujikom.amayones.my.id --email your-email@domain.com --agree-tos --non-interactive
+
+# Copy SSL certificates
+sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/fullchain.pem ./nginx/ssl/cert.pem
+sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/privkey.pem ./nginx/ssl/key.pem
+sudo chown ubuntu:ubuntu ./nginx/ssl/*.pem
+
+# Deploy
+docker compose -f docker-compose.ssl.yml up -d
+```
+
+4. **Setup GitHub Auto-Deploy**:
+   - Go to GitHub repo → Settings → Secrets → Actions
+   - Add `EC2_HOST` (your EC2 IP)
+   - Add `EC2_SSH_KEY` (your .pem file content)
+   - Push to main branch = auto deploy! 🎉
+
+### Detailed Guide
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step instructions.
+
 ## API Endpoints
 
 ### Authentication

@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USER:-local}/cinema-backend:latest
+    container_name: cinema-app
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: https://be-ujikom.amayones.my.id
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: cinema
+      DB_USERNAME: laravel
+      DB_PASSWORD: laravel
+    depends_on:
+      - db
+    volumes:
+      - ./.env:/var/www/.env
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+
+  nginx:
+    image: nginx:alpine
+    container_name: cinema-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: cinema-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: cinema
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+    volumes:
+      - cinema-db-data:/var/lib/mysql
+
+volumes:
+  cinema-db-data:

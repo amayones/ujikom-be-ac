@@ -50,40 +50,155 @@ docker compose up -d
 docker compose -f docker-compose.ssl.yml up -d
 ```
 
-## 🚀 EC2 Deployment
+## 🚀 Complete EC2 Deployment Guide
 
-### Langkah 1: Bersihkan Server (Jika Perlu)
+### Prerequisites
+- EC2 Ubuntu 20.04+ instance
+- Security Group dengan port 22, 80, 443 terbuka
+- Domain pointing ke EC2 IP (be-ujikom.amayones.my.id)
+- SSH key (.pem file) untuk akses EC2
+
+### Step 1: Setup GitHub Auto-Deploy (Sekali Saja)
+
+1. **Buka GitHub Repository**
+   - Go to: https://github.com/amayones/ujikom-be-ac
+   - Settings → Secrets and variables → Actions
+
+2. **Tambahkan Secrets**
+   - Click "New repository secret"
+   - Tambahkan 2 secrets:
+     ```
+     Name: EC2_HOST
+     Value: [IP public EC2 Anda, contoh: 54.255.65.241]
+     
+     Name: EC2_SSH_KEY
+     Value: [Copy paste seluruh isi file .pem key Anda]
+     ```
+
+3. **Test Auto-Deploy**
+   - Push any code ke main branch
+   - GitHub Actions akan otomatis deploy ke EC2
+   - Cek di tab "Actions" untuk melihat progress
+
+### Step 2: SSH ke EC2 Server
+
 ```bash
-# SSH ke EC2
-ssh -i your-key.pem ubuntu@your-ec2-ip
-
-# Download script pembersihan
-wget https://raw.githubusercontent.com/amayones/ujikom-be-ac/main/scripts/clean-server.sh
-chmod +x clean-server.sh
-./clean-server.sh
+# SSH ke server (ganti dengan IP dan key file Anda)
+ssh -i your-key.pem ubuntu@54.255.65.241
 ```
 
-### Langkah 2: Deploy Aplikasi
+### Step 3: Setup SSL Certificate
+
 ```bash
-# Download script deploy
-wget https://raw.githubusercontent.com/amayones/ujikom-be-ac/main/deploy.sh
-chmod +x deploy.sh
-./deploy.sh
+# Masuk ke directory project
+cd ~/cinema-backend
+
+# Install Certbot
+sudo apt update
+sudo apt install -y certbot
+
+# Generate SSL certificate (ganti email dengan email Anda)
+sudo certbot certonly --standalone -d be-ujikom.amayones.my.id --email admin@amayones.my.id --agree-tos --non-interactive
+
+# Copy SSL certificates ke project
+sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/fullchain.pem ./nginx/ssl/cert.pem
+sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/privkey.pem ./nginx/ssl/key.pem
+sudo chown ubuntu:ubuntu ./nginx/ssl/*.pem
+
+# Restart dengan SSL
+docker compose -f docker-compose.ssl.yml down
+docker compose -f docker-compose.ssl.yml up -d
 ```
 
-### Langkah 3: Setup Auto-Deploy GitHub
-1. Buka GitHub repo → Settings → Secrets and variables → Actions
-2. Tambahkan secrets:
-   - `EC2_HOST`: IP public EC2 Anda
-   - `EC2_SSH_KEY`: Isi file .pem key Anda
-3. Selesai! Setiap push ke main branch akan auto deploy
+### Step 4: Fix Laravel Cache Issue
 
-### Cek Status Aplikasi
 ```bash
-docker ps                    # Lihat container yang running
-docker logs cinema-app       # Lihat log aplikasi
-docker logs cinema-nginx     # Lihat log nginx
-curl https://be-ujikom.amayones.my.id/api/films  # Test API
+# Masuk ke container Laravel
+docker exec -it cinema-app bash
+
+# Buat directory cache dan set permission
+mkdir -p /var/www/bootstrap/cache
+mkdir -p /var/www/storage/framework/cache
+mkdir -p /var/www/storage/framework/sessions
+mkdir -p /var/www/storage/framework/views
+mkdir -p /var/www/storage/logs
+
+# Set permission
+chmod -R 775 /var/www/storage
+chmod -R 775 /var/www/bootstrap/cache
+
+# Clear cache
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# Keluar dari container
+exit
+```
+
+### Step 5: Setup SSL Auto-Renewal
+
+```bash
+# Setup cron job untuk auto-renewal SSL
+sudo crontab -e
+
+# Pilih editor (pilih 1 untuk nano)
+# Tambahkan baris ini di bagian bawah:
+0 12 * * * /usr/bin/certbot renew --quiet
+
+# Save: Ctrl+X, Y, Enter
+```
+
+### Step 6: Verifikasi Deployment
+
+```bash
+# Cek container status
+docker ps
+
+# Cek log aplikasi
+docker logs cinema-app
+docker logs cinema-nginx
+
+# Test HTTP (harus redirect ke HTTPS)
+curl -I http://be-ujikom.amayones.my.id
+
+# Test HTTPS
+curl -I https://be-ujikom.amayones.my.id
+
+# Test API endpoint
+curl https://be-ujikom.amayones.my.id/api/films
+```
+
+### 🎉 Selesai!
+
+**Aplikasi sekarang berjalan di:**
+- Frontend: https://ujikom.amayones.my.id
+- Backend API: https://be-ujikom.amayones.my.id
+
+**Auto-Deploy Active:**
+- Setiap push code ke GitHub main branch akan otomatis deploy
+- SSL certificate otomatis diperpanjang setiap hari
+- Zero-downtime deployment
+
+### Troubleshooting
+
+**Jika container tidak running:**
+```bash
+docker compose -f docker-compose.ssl.yml restart
+```
+
+**Jika SSL error:**
+```bash
+# Regenerate SSL certificate
+sudo certbot delete --cert-name be-ujikom.amayones.my.id
+sudo certbot certonly --standalone -d be-ujikom.amayones.my.id --email admin@amayones.my.id --agree-tos --non-interactive
+```
+
+**Jika cache error:**
+```bash
+docker exec -it cinema-app php artisan cache:clear
+docker exec -it cinema-app php artisan config:clear
 ```
 
 ## API Endpoints

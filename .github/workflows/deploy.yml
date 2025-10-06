@@ -20,6 +20,61 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/cinema-backend
-            chmod +x deploy.sh
-            ./deploy.sh
+            set -e
+            
+            PROJECT_DIR="~/cinema-backend"
+            LOG_FILE="~/deployment.log"
+            
+            # Function to log messages
+            log() {
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+            }
+            
+            log "Starting deployment process..."
+            
+            # Navigate to project directory
+            cd ~/cinema-backend || { log "Project directory not found"; exit 1; }
+            
+            # Pull latest changes
+            log "Pulling latest changes..."
+            git pull origin main || { log "Git pull failed"; exit 1; }
+            
+            # Stop containers gracefully with backup check
+            log "Stopping containers..."
+            if docker compose ps | grep -q "Up"; then
+                docker compose down --timeout 30 || log "Some containers were already stopped"
+            fi
+            
+            # Clean up resources
+            log "Cleaning up resources..."
+            docker system prune -f || log "Cleanup completed with warnings"
+            
+            # Build and start containers
+            log "Building and starting containers..."
+            docker compose up -d --build --force-recreate || { log "Docker compose failed"; exit 1; }
+            
+            # Wait for services to be ready
+            log "Waiting for services to be ready..."
+            sleep 60
+            
+            # Check container status
+            log "Checking container status..."
+            docker compose ps
+            
+            # Verify application with retry
+            log "Verifying application..."
+            for i in {1..5}; do
+                if curl -f http://localhost:8000/api/films > /dev/null 2>&1; then
+                    log "Application is responding correctly"
+                    break
+                elif [ $i -eq 5 ]; then
+                    log "Application health check failed after 5 attempts"
+                    docker compose logs app --tail 20
+                    exit 1
+                else
+                    log "Health check attempt $i failed, retrying in 10s..."
+                    sleep 10
+                fi
+            done
+            
+            log "Deployment completed successfully!"

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class BaseController extends Controller
 {
-    protected function success($data = null, $message = 'Success', $code = 200)
+    protected function success($data = null, $message = 'Berhasil', $code = 200)
     {
         return response()->json([
             'success' => true,
@@ -15,7 +15,7 @@ class BaseController extends Controller
         ], $code);
     }
 
-    protected function error($message = 'Error', $code = 400, $data = null)
+    protected function error($message = 'Terjadi kesalahan', $code = 400, $data = null)
     {
         return response()->json([
             'success' => false,

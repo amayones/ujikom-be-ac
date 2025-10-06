@@ -19,11 +19,12 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             return response()->json([
                 'user' => Auth::user(),
-                'token' => $request->user()->createToken('auth-token')->plainTextToken
+                'token' => $request->user()->createToken('auth-token')->plainTextToken,
+                'message' => 'Login berhasil'
             ]);
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        return response()->json(['message' => 'Email atau password salah'], 401);
     }
 
     public function register(Request $request)
@@ -45,12 +46,15 @@ class AuthController extends Controller
             'role' => 'customer'
         ]);
 
-        return response()->json(['user' => $user], 201);
+        return response()->json([
+            'user' => $user,
+            'message' => 'Registrasi berhasil'
+        ], 201);
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['message' => 'Logout berhasil']);
     }
 }

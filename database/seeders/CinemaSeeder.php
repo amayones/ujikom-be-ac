@@ -47,35 +47,45 @@ class CinemaSeeder extends Seeder
 
         // Create Prices
         Price::create([
-            'type' => 'Weekday',
+            'type' => 'Hari Kerja',
             'price' => 35000,
             'created_by' => 1
         ]);
 
         Price::create([
-            'type' => 'Weekend',
+            'type' => 'Akhir Pekan',
             'price' => 45000,
             'created_by' => 1
         ]);
 
         // Create Films
         Film::create([
-            'title' => 'Avengers: Endgame',
-            'genre' => 'Action, Adventure',
-            'duration' => 181,
-            'description' => 'The epic conclusion to the Infinity Saga',
+            'title' => 'Pengabdi Setan 2: Communion',
+            'genre' => 'Horror, Thriller',
+            'duration' => 119,
+            'description' => 'Keluarga Suwono kembali dihadapkan dengan teror yang lebih mengerikan',
             'status' => 'play_now',
-            'poster' => 'avengers-endgame.jpg',
+            'poster' => 'pengabdi-setan-2.jpg',
             'created_by' => 1
         ]);
 
         Film::create([
-            'title' => 'Spider-Man: No Way Home',
-            'genre' => 'Action, Adventure',
-            'duration' => 148,
-            'description' => 'Spider-Man faces his greatest challenge',
+            'title' => 'KKN di Desa Penari',
+            'genre' => 'Horror, Mystery',
+            'duration' => 175,
+            'description' => 'Enam mahasiswa KKN mengalami teror mistis di desa terpencil',
+            'status' => 'play_now',
+            'poster' => 'kkn-desa-penari.jpg',
+            'created_by' => 1
+        ]);
+
+        Film::create([
+            'title' => 'Dilan 1991',
+            'genre' => 'Romance, Drama',
+            'duration' => 121,
+            'description' => 'Kelanjutan kisah cinta Dilan dan Milea di tahun 1991',
             'status' => 'coming_soon',
-            'poster' => 'spiderman-nwh.jpg',
+            'poster' => 'dilan-1991.jpg',
             'created_by' => 1
         ]);
     }

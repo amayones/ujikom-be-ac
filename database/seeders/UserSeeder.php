@@ -12,41 +12,41 @@ class UserSeeder extends Seeder
     {
         // Create Admin
         User::create([
-            'name' => 'Admin Cinema',
+            'name' => 'Admin Bioskop',
             'email' => 'admin@cinema.com',
             'password' => Hash::make('Admin@2024!'),
             'phone' => '081234567890',
-            'address' => '123 Admin Street',
+            'address' => 'Jl. Admin No. 123, Jakarta',
             'role' => 'admin'
         ]);
 
         // Create Owner
         User::create([
-            'name' => 'Owner Cinema',
+            'name' => 'Pemilik Bioskop',
             'email' => 'owner@cinema.com',
             'password' => Hash::make('Owner@2024!'),
             'phone' => '081234567891',
-            'address' => '123 Owner Street',
+            'address' => 'Jl. Pemilik No. 456, Jakarta',
             'role' => 'owner'
         ]);
 
         // Create Cashier
         User::create([
-            'name' => 'Cashier Cinema',
+            'name' => 'Kasir Bioskop',
             'email' => 'cashier@cinema.com',
             'password' => Hash::make('Cashier@2024!'),
             'phone' => '081234567892',
-            'address' => '123 Cashier Street',
+            'address' => 'Jl. Kasir No. 789, Jakarta',
             'role' => 'cashier'
         ]);
 
         // Create Customer
         User::create([
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
+            'name' => 'Budi Santoso',
+            'email' => 'budi@example.com',
             'password' => Hash::make('Customer@2024!'),
             'phone' => '081234567893',
-            'address' => '123 Customer Street',
+            'address' => 'Jl. Pelanggan No. 321, Jakarta',
             'role' => 'customer'
         ]);
     }

@@ -387,6 +387,13 @@ php artisan db:seed --class=TestDataSeeder
 3. Make changes with tests
 4. Submit pull request
 
+## 📚 Complete Documentation
+
+- **[COMPLETE-DEPLOYMENT-GUIDE.md](COMPLETE-DEPLOYMENT-GUIDE.md)** - Panduan lengkap dari AWS setup sampai deployment
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment reference
+- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - API endpoints documentation
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture overview
+
 ## License
 
 MIT License - see LICENSE file for details.

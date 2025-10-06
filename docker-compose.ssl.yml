@@ -16,6 +16,8 @@ services:
       DB_DATABASE: cinema
       DB_USERNAME: laravel
       DB_PASSWORD: laravel
+      SESSION_SECURE_COOKIE: "true"
+      SESSION_SAME_SITE: strict
     depends_on:
       - db
     volumes:

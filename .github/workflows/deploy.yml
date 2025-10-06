@@ -32,8 +32,10 @@ jobs:
             # Navigate to project directory
             cd ~/cinema-backend || { log "Project directory not found"; exit 1; }
             
-            # Pull latest changes
-            log "Pulling latest changes..."
+            # Reset and pull latest changes
+            log "Resetting local changes and pulling latest..."
+            git reset --hard HEAD
+            git clean -fd
             git pull origin main || { log "Git pull failed"; exit 1; }
             
             # Stop containers gracefully

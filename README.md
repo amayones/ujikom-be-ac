@@ -50,65 +50,41 @@ docker compose up -d
 docker compose -f docker-compose.ssl.yml up -d
 ```
 
-## 🚀 Production Deployment (EC2)
+## 🚀 EC2 Deployment
 
-### Quick Start (Fresh Server)
-
-1. **Clean existing installation** (if needed):
+### Langkah 1: Bersihkan Server (Jika Perlu)
 ```bash
-# SSH to your EC2 instance
+# SSH ke EC2
 ssh -i your-key.pem ubuntu@your-ec2-ip
 
-# Download and run cleanup script
+# Download script pembersihan
 wget https://raw.githubusercontent.com/amayones/ujikom-be-ac/main/scripts/clean-server.sh
 chmod +x clean-server.sh
 ./clean-server.sh
 ```
 
-2. **Fresh server setup**:
+### Langkah 2: Deploy Aplikasi
 ```bash
-# Download and run setup script
-wget https://raw.githubusercontent.com/amayones/ujikom-be-ac/main/scripts/setup-server.sh
-chmod +x setup-server.sh
-./setup-server.sh
-
-# Logout and login again
-exit
+# Download script deploy
+wget https://raw.githubusercontent.com/amayones/ujikom-be-ac/main/deploy.sh
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-3. **Deploy application**:
+### Langkah 3: Setup Auto-Deploy GitHub
+1. Buka GitHub repo → Settings → Secrets and variables → Actions
+2. Tambahkan secrets:
+   - `EC2_HOST`: IP public EC2 Anda
+   - `EC2_SSH_KEY`: Isi file .pem key Anda
+3. Selesai! Setiap push ke main branch akan auto deploy
+
+### Cek Status Aplikasi
 ```bash
-# SSH back to server
-ssh -i your-key.pem ubuntu@your-ec2-ip
-
-# Clone project
-git clone https://github.com/amayones/ujikom-be-ac.git cinema-backend
-cd cinema-backend
-
-# Setup environment
-cp .env.production .env
-mkdir -p nginx/ssl
-
-# Generate SSL certificate
-sudo certbot certonly --standalone -d be-ujikom.amayones.my.id --email your-email@domain.com --agree-tos --non-interactive
-
-# Copy SSL certificates
-sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/fullchain.pem ./nginx/ssl/cert.pem
-sudo cp /etc/letsencrypt/live/be-ujikom.amayones.my.id/privkey.pem ./nginx/ssl/key.pem
-sudo chown ubuntu:ubuntu ./nginx/ssl/*.pem
-
-# Deploy
-docker compose -f docker-compose.ssl.yml up -d
+docker ps                    # Lihat container yang running
+docker logs cinema-app       # Lihat log aplikasi
+docker logs cinema-nginx     # Lihat log nginx
+curl https://be-ujikom.amayones.my.id/api/films  # Test API
 ```
-
-4. **Setup GitHub Auto-Deploy**:
-   - Go to GitHub repo → Settings → Secrets → Actions
-   - Add `EC2_HOST` (your EC2 IP)
-   - Add `EC2_SSH_KEY` (your .pem file content)
-   - Push to main branch = auto deploy! 🎉
-
-### Detailed Guide
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step instructions.
 
 ## API Endpoints
 

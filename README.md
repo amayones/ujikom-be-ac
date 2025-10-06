@@ -82,10 +82,59 @@ docker compose -f docker-compose.ssl.yml up -d
 
 ### Step 2: SSH ke EC2 Server
 
+#### Opsi 1: Command Line (Terminal/CMD)
 ```bash
 # SSH ke server (ganti dengan IP dan key file Anda)
 ssh -i your-key.pem ubuntu@54.255.65.241
 ```
+
+#### Opsi 2: Menggunakan Termius (Recommended)
+
+**Setup Termius:**
+1. Download Termius dari https://termius.com
+2. Install dan buka aplikasi
+3. Click "+ New Host"
+4. Isi konfigurasi:
+   ```
+   Alias: Cinema Backend Server
+   Hostname: 54.255.65.241 (IP EC2 Anda)
+   Username: ubuntu
+   Port: 22
+   ```
+5. Di bagian "Keys", click "+ Add Key"
+6. Import file .pem key Anda
+7. Pilih key yang sudah diimport
+8. Save dan Connect
+
+**Kelebihan Termius:**
+- ✅ GUI yang user-friendly
+- ✅ Save multiple server connections
+- ✅ Built-in file manager (SFTP)
+- ✅ Syntax highlighting
+- ✅ Auto-reconnect jika koneksi putus
+- ✅ Copy-paste mudah
+- ✅ Multi-tab support
+- ✅ Cross-platform (Windows, Mac, Linux, Mobile)
+- ✅ Sync settings across devices
+
+**Kekurangan Termius:**
+- ❌ Aplikasi berbayar untuk fitur advanced
+- ❌ Butuh install aplikasi tambahan
+- ❌ Konsumsi RAM lebih besar
+- ❌ Tidak tersedia di semua server/environment
+
+**Kelebihan Command Line:**
+- ✅ Tersedia di semua sistem
+- ✅ Ringan dan cepat
+- ✅ Tidak butuh install aplikasi
+- ✅ Gratis sepenuhnya
+- ✅ Scriptable dan automatable
+
+**Kekurangan Command Line:**
+- ❌ Interface kurang user-friendly
+- ❌ Tidak ada GUI file manager
+- ❌ Copy-paste agak ribet
+- ❌ Harus hafal command dan parameter
 
 ### Step 3: Setup SSL Certificate
 

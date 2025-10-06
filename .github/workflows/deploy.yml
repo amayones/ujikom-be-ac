@@ -20,59 +20,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e
-            
-            # Simple logging function
-            log() {
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
-            }
-            
-            log "Starting deployment process..."
-            
-            # Navigate to project directory
-            cd ~/cinema-backend || { log "Project directory not found"; exit 1; }
-            
-            # Reset and pull latest changes
-            log "Resetting local changes and pulling latest..."
-            git reset --hard HEAD
-            git clean -fd
-            git pull origin main || { log "Git pull failed"; exit 1; }
-            
-            # Stop containers gracefully
-            log "Stopping containers..."
-            docker compose down --timeout 30 || echo "Some containers were already stopped"
-            
-            # Clean up resources
-            log "Cleaning up resources..."
-            docker system prune -f || echo "Cleanup completed"
-            
-            # Build and start containers
-            log "Building and starting containers..."
-            docker compose up -d --build --force-recreate || { log "Docker compose failed"; exit 1; }
-            
-            # Wait for services to be ready
-            log "Waiting for services to be ready..."
-            sleep 60
-            
-            # Check container status
-            log "Checking container status..."
-            docker compose ps
-            
-            # Verify application with retry
-            log "Verifying application..."
-            for i in {1..3}; do
-                if curl -s http://localhost:8000 | grep -q "Laravel" || curl -s http://localhost:8000/api/films | grep -q "\[\]\|{\|error"; then
-                    log "Application is responding correctly"
-                    break
-                elif [ $i -eq 3 ]; then
-                    log "Application may have issues but containers are running"
-                    docker compose logs app --tail 10
-                    log "Deployment completed with warnings - check logs above"
-                    exit 0
-                else
-                    log "Health check attempt $i failed, retrying in 15s..."
-                    sleep 15
-                fi
-            done
-            
-            log "Deployment completed successfully!"
+            cd ~/cinema-backend
+            git pull origin main
+            docker compose down
+            docker compose up -d --build

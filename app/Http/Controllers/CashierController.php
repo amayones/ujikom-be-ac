@@ -30,12 +30,20 @@ class CashierController extends Controller
             'cashier_id' => Auth::id()
         ]);
 
-        foreach ($validated['seat_ids'] as $seatId) {
-            ScheduleSeat::where('id', $seatId)->update(['status' => 'booked']);
-        }
+        \DB::transaction(function () use ($validated) {
+            foreach ($validated['seat_ids'] as $seatId) {
+                $updated = ScheduleSeat::where('id', $seatId)
+                    ->where('status', 'available')
+                    ->update(['status' => 'booked']);
+                
+                if (!$updated) {
+                    throw new \Exception('Seat no longer available');
+                }
+            }
+        });
 
         // Create payment record
-        $schedule = Schedule::with('price')->find($validated['schedule_id']);
+        $schedule = Schedule::with('price')->findOrFail($validated['schedule_id']);
         $totalAmount = $schedule->price->price * count($validated['seat_ids']);
 
         $payment = Payment::create([
@@ -97,9 +105,11 @@ class CashierController extends Controller
             $order->update(['status' => 'cancelled']);
             
             // Release seats
-            ScheduleSeat::where('schedule_id', $order->schedule_id)
-                ->whereIn('id', $order->orderDetails->pluck('schedule_seat_id'))
-                ->update(['status' => 'available']);
+            \DB::transaction(function () use ($order) {
+                ScheduleSeat::where('schedule_id', $order->schedule_id)
+                    ->whereIn('id', $order->orderDetails->pluck('schedule_seat_id'))
+                    ->update(['status' => 'available']);
+            });
 
             return response()->json(['order' => $order]);
         }

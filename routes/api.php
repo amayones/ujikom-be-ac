@@ -7,15 +7,17 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\CashierController;
 
-// Auth routes
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+// Auth routes with rate limiting
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+});
 
 // Public routes (no auth required)
 Route::get('/films', [CustomerController::class, 'getFilms']);
 Route::get('/films/{id}', [CustomerController::class, 'getFilmDetail']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Customer routes (authenticated)

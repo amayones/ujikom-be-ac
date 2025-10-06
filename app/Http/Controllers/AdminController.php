@@ -22,12 +22,13 @@ class AdminController extends Controller
     public function storeFilm(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string',
-            'genre' => 'required|string',
-            'duration' => 'required|integer',
-            'description' => 'required|string',
+            'title' => 'required|string|max:255',
+            'genre' => 'required|string|max:100',
+            'duration' => 'required|integer|min:1|max:500',
+            'description' => 'required|string|max:2000',
             'status' => 'required|in:play_now,coming_soon,history',
-            'poster' => 'nullable|string'
+            'poster' => 'nullable|url|max:500',
+            'director' => 'nullable|string|max:255'
         ]);
 
         $film = Film::create([
@@ -42,12 +43,13 @@ class AdminController extends Controller
     {
         $film = Film::findOrFail($id);
         $validated = $request->validate([
-            'title' => 'string',
-            'genre' => 'string',
-            'duration' => 'integer',
-            'description' => 'string',
+            'title' => 'string|max:255',
+            'genre' => 'string|max:100',
+            'duration' => 'integer|min:1|max:500',
+            'description' => 'string|max:2000',
             'status' => 'in:play_now,coming_soon,history',
-            'poster' => 'nullable|string'
+            'poster' => 'nullable|url|max:500',
+            'director' => 'nullable|string|max:255'
         ]);
 
         $film->update($validated);

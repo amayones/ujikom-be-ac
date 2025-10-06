@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\LoggingService;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -17,23 +18,25 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            LoggingService::logUserAction('login_success', Auth::id());
             return response()->json([
                 'user' => Auth::user(),
                 'token' => $request->user()->createToken('auth-token')->plainTextToken
             ]);
         }
 
+        LoggingService::logSecurityEvent('login_failed', ['email' => $credentials['email']]);
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
 
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'no_hp' => 'required|string',
-            'alamat' => 'required|string'
+            'nama' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+            'no_hp' => 'required|string|regex:/^[0-9+\-\s]+$/|min:10|max:15',
+            'alamat' => 'required|string|max:500'
         ]);
 
         $user = User::create([
@@ -42,7 +45,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
             'no_hp' => $validated['no_hp'],
             'alamat' => $validated['alamat'],
-            'role' => 'pelanggan'
+            'role' => 'customer'
         ]);
 
         return response()->json(['user' => $user], 201);

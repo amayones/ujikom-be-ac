@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Admin Cinema',
             'email' => 'admin@cinema.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Admin@2024!'),
             'phone' => '081234567890',
             'address' => '123 Admin Street',
             'role' => 'admin'
@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Owner Cinema',
             'email' => 'owner@cinema.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Owner@2024!'),
             'phone' => '081234567891',
             'address' => '123 Owner Street',
             'role' => 'owner'
@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Cashier Cinema',
             'email' => 'cashier@cinema.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Cashier@2024!'),
             'phone' => '081234567892',
             'address' => '123 Cashier Street',
             'role' => 'cashier'
@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('Customer@2024!'),
             'phone' => '081234567893',
             'address' => '123 Customer Street',
             'role' => 'customer'

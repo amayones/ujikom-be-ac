@@ -15,30 +15,34 @@ class CinemaSeeder extends Seeder
         // Create Studios
         $studio1 = Studio::create([
             'name' => 'Studio 1',
-            'capacity' => 50,
+            'capacity' => 80,
             'created_by' => 1
         ]);
 
         $studio2 = Studio::create([
             'name' => 'Studio 2',
-            'capacity' => 30,
+            'capacity' => 60,
             'created_by' => 1
         ]);
 
-        // Create Seats for Studio 1
-        for ($i = 1; $i <= 50; $i++) {
-            StudioSeat::create([
-                'studio_id' => $studio1->id,
-                'seat_code' => 'A' . $i
-            ]);
+        // Create Seats for Studio 1 (80 seats in 8x10 grid)
+        for ($row = 1; $row <= 8; $row++) {
+            for ($col = 1; $col <= 10; $col++) {
+                StudioSeat::create([
+                    'studio_id' => $studio1->id,
+                    'seat_code' => chr(64 + $row) . $col
+                ]);
+            }
         }
 
-        // Create Seats for Studio 2
-        for ($i = 1; $i <= 30; $i++) {
-            StudioSeat::create([
-                'studio_id' => $studio2->id,
-                'seat_code' => 'B' . $i
-            ]);
+        // Create Seats for Studio 2 (60 seats in 6x10 grid)
+        for ($row = 1; $row <= 6; $row++) {
+            for ($col = 1; $col <= 10; $col++) {
+                StudioSeat::create([
+                    'studio_id' => $studio2->id,
+                    'seat_code' => chr(64 + $row) . $col
+                ]);
+            }
         }
 
         // Create Prices

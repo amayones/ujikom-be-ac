@@ -13,6 +13,7 @@ class CustomerController extends Controller
 {
     public function getFilms(Request $request)
     {
+        $request->validate(['status' => 'nullable|in:play_now,coming_soon,history']);
         $status = $request->get('status', 'play_now');
         return Film::where('status', $status)->get();
     }
@@ -24,6 +25,7 @@ class CustomerController extends Controller
 
     public function getSchedules($filmId)
     {
+        $filmId = (int) $filmId;
         return Schedule::with(['studio', 'price'])
             ->where('film_id', $filmId)
             ->where('date', '>=', now()->toDateString())
@@ -32,6 +34,7 @@ class CustomerController extends Controller
 
     public function getAvailableSeats($scheduleId)
     {
+        $scheduleId = (int) $scheduleId;
         return ScheduleSeat::where('schedule_id', $scheduleId)
             ->where('status', 'available')
             ->get();
@@ -52,9 +55,18 @@ class CustomerController extends Controller
             'status' => 'pending'
         ]);
 
-        foreach ($validated['seat_ids'] as $seatId) {
-            ScheduleSeat::where('id', $seatId)->update(['status' => 'booked']);
-        }
+        // Use database transaction for seat booking
+        \DB::transaction(function () use ($validated, $order) {
+            foreach ($validated['seat_ids'] as $seatId) {
+                $updated = ScheduleSeat::where('id', $seatId)
+                    ->where('status', 'available')
+                    ->update(['status' => 'booked']);
+                
+                if (!$updated) {
+                    throw new \Exception('Seat no longer available');
+                }
+            }
+        });
 
         return response()->json(['order' => $order], 201);
     }

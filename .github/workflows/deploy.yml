@@ -22,12 +22,9 @@ jobs:
           script: |
             set -e
             
-            PROJECT_DIR="~/cinema-backend"
-            LOG_FILE="~/deployment.log"
-            
-            # Function to log messages
+            # Simple logging function
             log() {
-                echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
             }
             
             log "Starting deployment process..."
@@ -39,15 +36,13 @@ jobs:
             log "Pulling latest changes..."
             git pull origin main || { log "Git pull failed"; exit 1; }
             
-            # Stop containers gracefully with backup check
+            # Stop containers gracefully
             log "Stopping containers..."
-            if docker compose ps | grep -q "Up"; then
-                docker compose down --timeout 30 || log "Some containers were already stopped"
-            fi
+            docker compose down --timeout 30 || echo "Some containers were already stopped"
             
             # Clean up resources
             log "Cleaning up resources..."
-            docker system prune -f || log "Cleanup completed with warnings"
+            docker system prune -f || echo "Cleanup completed"
             
             # Build and start containers
             log "Building and starting containers..."

@@ -21,6 +21,5 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/cinema-backend
-            git pull origin main
-            docker compose down
-            docker compose up -d --build
+            chmod +x deploy.sh
+            ./deploy.sh

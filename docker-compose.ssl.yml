@@ -1,10 +1,6 @@
-version: '3.8'
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: ${DOCKERHUB_USER:-local}/cinema-backend:latest
+    build: .
     container_name: cinema-app
     restart: unless-stopped
     environment:
@@ -16,14 +12,10 @@ services:
       DB_DATABASE: cinema
       DB_USERNAME: laravel
       DB_PASSWORD: laravel
-      SESSION_SECURE_COOKIE: "true"
-      SESSION_SAME_SITE: strict
     depends_on:
       - db
     volumes:
       - ./.env:/var/www/.env
-      - ./storage:/var/www/storage
-      - ./bootstrap/cache:/var/www/bootstrap/cache
 
   nginx:
     image: nginx:alpine

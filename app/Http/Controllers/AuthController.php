@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Services\LoggingService;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -18,14 +17,12 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            LoggingService::logUserAction('login_success', Auth::id());
             return response()->json([
                 'user' => Auth::user(),
                 'token' => $request->user()->createToken('auth-token')->plainTextToken
             ]);
         }
 
-        LoggingService::logSecurityEvent('login_failed', ['email' => $credentials['email']]);
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
 

@@ -20,6 +20,17 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # Check disk space
+            df -h
+            
+            # Clean up Docker to free space
+            docker system prune -af --volumes
+            docker image prune -af
+            
+            # Remove old containers and images
+            docker container prune -f
+            docker volume prune -f
+            
             # Create directory if not exists
             if [ ! -d "~/cinema-backend" ]; then
               git clone https://github.com/amayones/ujikom-be-ac.git ~/cinema-backend

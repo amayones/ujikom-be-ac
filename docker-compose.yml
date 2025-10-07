@@ -8,12 +8,10 @@ services:
     working_dir: /var/www
     volumes:
       - ./:/var/www
-    expose:
-      - "9000"
+    ports:
+      - "9000:9000"  
     depends_on:
       - db
-    networks:
-      - cinema
 
   db:
     image: mysql:8.0
@@ -26,11 +24,6 @@ services:
       MYSQL_PASSWORD: cinemapass
     volumes:
       - dbdata:/var/lib/mysql
-    networks:
-      - cinema
 
 volumes:
   dbdata:
-
-networks:
-  cinema:

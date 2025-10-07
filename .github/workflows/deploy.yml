@@ -29,7 +29,15 @@ jobs:
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           script: |
             cd /home/ubuntu/cinema
-            cp .env.example .env
+            if [ ! -f .env ]; then
+                cp .env.example .env
+            fi
+
             docker-compose down
             docker-compose up -d --build
-            docker exec cinema-app bash -c "php artisan key:generate && php artisan migrate --seed"
+
+            if docker ps --format '{{.Names}}' | grep -q '^cinema-app$'; then
+                docker exec -it cinema-app bash -c "php artisan key:generate && php artisan migrate --seed"
+            else
+                echo "Container cinema-app belum siap, artisan belum dijalankan"
+            fi

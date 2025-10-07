@@ -1,41 +1,32 @@
 version: '3.8'
+
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: ${DOCKERHUB_USER:-local}/cinema-backend:latest
-    container_name: cinema-app
-    restart: unless-stopped
-    ports:
-      - "80:8000"
-    environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-      APP_URL: http://localhost
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: cinema
-      DB_USERNAME: laravel
-      DB_PASSWORD: laravel
+    build: .
+    container_name: laravel_app
+    restart: always
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
     depends_on:
       - db
-    volumes:
-      - ./.env:/var/www/.env              # mount host .env (must exist)
-      - ./storage:/var/www/storage
-      - ./bootstrap/cache:/var/www/bootstrap/cache
+    environment:
+      - APP_ENV=production
+    ports:
+      - "8000:8000"
+    command: sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
 
   db:
-    image: mysql:8.0
-    container_name: cinema-db
-    restart: unless-stopped
+    image: mysql:8
+    container_name: laravel_db
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: cinema
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
     volumes:
-      - cinema-db-data:/var/lib/mysql
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
 
 volumes:
-  cinema-db-data:
+  dbdata:

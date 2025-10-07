@@ -32,12 +32,11 @@ jobs:
             if [ ! -f .env ]; then
                 cp .env.example .env
             fi
-
+            sudo chown -R www-data:www-data /home/ubuntu/cinema
+            sudo chmod -R 755 /home/ubuntu/cinema
             docker-compose down
             docker-compose up -d --build
-
-            if docker ps --format '{{.Names}}' | grep -q '^cinema-app$'; then
-                docker exec -it cinema-app bash -c "php artisan key:generate && php artisan migrate --seed"
-            else
-                echo "Container cinema-app belum siap, artisan belum dijalankan"
-            fi
+            sleep 15
+            docker exec cinema-app php artisan key:generate
+            docker exec cinema-app php artisan migrate --seed
+            echo "✅ Deploy selesai, Laravel sudah siap!"

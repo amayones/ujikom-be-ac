@@ -49,7 +49,7 @@ class CinemaSeeder extends Seeder
         Price::create([
             'type' => 'Hari Kerja',
             'price' => 35000,
-            'created_by' => 1
+            'created_by' => 1 
         ]);
 
         Price::create([

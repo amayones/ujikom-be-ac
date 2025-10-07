@@ -54,7 +54,7 @@ class CinemaSeeder extends Seeder
 
         Price::create([
             'type' => 'Akhir Pekan',
-            'price' => 45000,
+            'price' => 45000, 
             'created_by' => 1
         ]);
 

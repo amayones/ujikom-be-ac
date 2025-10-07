@@ -1,9 +1,11 @@
 name: Deploy Cinema
 
+
 on:
 push:
 branches:
 - main
+
 
 jobs:
 deploy:

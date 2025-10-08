@@ -506,123 +506,101 @@ free -h
 htop
 ```
 
-### 15. Common Issues & Solutions
+### 15. Troubleshooting
 
-**GitHub Actions SSH Error (Permission denied):**
+**Domain timeout:**
 ```bash
-# Re-generate GitHub Actions SSH key
-ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/github_actions -N ""
-cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
+# Check services
+docker ps -a
+sudo systemctl status nginx
+curl localhost:8080
 
-# Copy private key dan update GitHub Secret LIGHTSAIL_SSH_KEY
-cat ~/.ssh/github_actions
+# Restart services
+docker-compose restart
+sudo systemctl restart nginx
+
+# Check Lightsail firewall (port 80, 443 harus terbuka)
 ```
 
-**Container tidak start:**
+**HTTPS tidak work:**
+```bash
+# Check port 443
+sudo netstat -tlnp | grep :443
+
+# Check SSL certificate
+sudo certbot certificates
+
+# Restart Nginx
+sudo systemctl restart nginx
+```
+
+**GitHub Actions error:**
+```bash
+# Re-generate SSH key
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/github_actions -N ""
+cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
+cat ~/.ssh/github_actions  # Copy ke GitHub Secret
+```
+
+**Container issues:**
 ```bash
 docker-compose down
-docker system prune -f
 docker-compose up -d --build
-```
-
-**Permission issues:**
-```bash
-sudo chown -R ubuntu:ubuntu /home/ubuntu/cinema
-docker exec cinema-app chown -R www-data:www-data /var/www/storage
-```
-
-**Database connection error:**
-```bash
-docker exec cinema-db mysql -u root -p -e "SHOW DATABASES;"
-```
-
-**Nginx error:**
-```bash
-sudo nginx -t
-sudo systemctl status nginx
-sudo tail -f /var/log/nginx/error.log
-```
-
-**Git pull error:**
-```bash
-# Setup git config jika belum
-git config --global user.email "deploy@cinema.com"
-git config --global user.name "Cinema Deploy"
-
-# Reset jika ada conflict
-git reset --hard origin/main
-git pull origin main
+docker exec cinema-app php artisan migrate --force
 ```
 
 ---
 
-## ✅ Final Checklist
+## ✅ Production Checklist
 
-- [ ] AWS Lightsail instance running
-- [ ] Static IP attached
-- [ ] SSH connection working
-- [ ] Docker & Docker Compose installed
-- [ ] Nginx installed and configured
-- [ ] GitHub SSH key setup
-- [ ] Project files created
-- [ ] Environment configured
-- [ ] First deployment successful
-- [ ] GitHub Actions secrets configured
-- [ ] Auto-deployment working
+- [ ] Lightsail instance + static IP
+- [ ] Docker containers running
+- [ ] Nginx proxy configured
+- [ ] GitHub SSH keys setup
+- [ ] Domain A record configured
+- [ ] **Lightsail firewall: port 443 HTTPS terbuka**
+- [ ] SSL certificate installed
+- [ ] HTTPS redirect working
+- [ ] GitHub Actions deployment working
+- [ ] Backup script configured
 
-**Test URLs:**
-- API Base: `http://YOUR_STATIC_IP/api`
-- Health Check: `http://YOUR_STATIC_IP/api/health`
-
-**Default Admin Login:**
-- Email: `admin@cinema.com`
-- Password: `password`
+**Production URLs:**
+- **API**: `https://be-ujikom.amayones.my.id/api`
+- **Health**: `https://be-ujikom.amayones.my.id/api/health`
+- **Admin**: `https://be-ujikom.amayones.my.id/admin`
 
 ---
 
-## 🌐 Setup Domain & HTTPS (Route53 + Let's Encrypt)
+## 🌐 Setup Domain & HTTPS
 
 ### 16. Setup Domain di Route53
 
-**A. Setup Subdomain (Domain sudah ada):**
-1. **AWS Console** → **Route53** → **Hosted zones**
-2. **Pilih hosted zone**: `amayones.my.id`
-3. **Create record**:
+1. **AWS Console** → **Route53** → **Hosted zones** → **amayones.my.id**
+2. **Create record**:
    - **Record name**: `be-ujikom`
    - **Record type**: `A`
    - **Value**: `YOUR_LIGHTSAIL_STATIC_IP`
    - **TTL**: `300`
-4. **Create records**
+3. **Create records**
 
-**B. Test DNS:**
-```bash
-# Test dari local computer
-nslookup be-ujikom.amayones.my.id
+### 17. **PENTING: Buka Port HTTPS di Lightsail**
 
-# Atau test dengan dig
-dig be-ujikom.amayones.my.id
-```
+**Di AWS Lightsail Console:**
+1. **Instance** → **Networking** tab
+2. **Firewall** → **Add rule**:
+   - **Application**: `HTTPS`
+   - **Protocol**: `TCP`
+   - **Port**: `443`
+3. **Create**
 
-### 17. Install Certbot untuk SSL
+### 18. Install Certbot & Generate SSL
 
 ```bash
 # Install Certbot
-sudo apt update
 sudo apt install snapd -y
-sudo snap install core; sudo snap refresh core
 sudo snap install --classic certbot
-
-# Create symlink
 sudo ln -s /snap/bin/certbot /usr/bin/certbot
 
-# Test certbot
-certbot --version
-```
-
-### 18. Update Nginx untuk Domain
-
-```bash
 # Update Nginx config untuk domain
 sudo tee /etc/nginx/sites-available/cinema << 'EOF'
 server {
@@ -640,160 +618,83 @@ server {
 }
 EOF
 
-# Test dan restart Nginx
+# Restart Nginx
 sudo nginx -t
 sudo systemctl restart nginx
-```
 
-### 19. Generate SSL Certificate
-
-```bash
-# Generate SSL certificate dengan Certbot
+# Generate SSL certificate
 sudo certbot --nginx -d be-ujikom.amayones.my.id
-
-# Ikuti prompts:
-# 1. Enter email address
-# 2. Agree to terms (Y)
-# 3. Share email with EFF (Y/N - pilihan)
-# 4. Pilih redirect HTTP to HTTPS (2)
+# Pilih: (2) Redirect HTTP to HTTPS
 ```
 
-**Certbot akan otomatis update Nginx config menjadi:**
-```nginx
-server {
-    server_name be-ujikom.amayones.my.id;
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_redirect off;
-    }
-
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/be-ujikom.amayones.my.id/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/be-ujikom.amayones.my.id/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-}
-
-server {
-    if ($host = be-ujikom.amayones.my.id) {
-        return 301 https://$host$request_uri;
-    }
-
-    listen 80;
-    server_name be-ujikom.amayones.my.id;
-    return 404;
-}
-```
-
-### 20. Update Laravel Environment
+### 19. Update Laravel Environment
 
 ```bash
-# Update .env file
+# Update .env
 cd /home/ubuntu/cinema
-nano .env
-```
+sed -i 's|APP_URL=.*|APP_URL=https://be-ujikom.amayones.my.id|' .env
+sed -i 's|APP_DEBUG=.*|APP_DEBUG=false|' .env
 
-**Update APP_URL di .env:**
-```env
-APP_URL=https://be-ujikom.amayones.my.id
-APP_ENV=production
-APP_DEBUG=false
-```
-
-```bash
-# Restart containers untuk apply changes
+# Restart containers
 docker-compose restart
-
-# Clear cache
 docker exec cinema-app php artisan config:cache
-docker exec cinema-app php artisan route:cache
 ```
 
-### 21. Setup Auto-Renewal SSL
+### 20. Test HTTPS
 
 ```bash
-# Test auto-renewal
-sudo certbot renew --dry-run
-
-# Check crontab (sudah otomatis di-setup oleh snap)
-sudo systemctl status snap.certbot.renew.timer
-
-# Manual renewal jika diperlukan
-sudo certbot renew
-```
-
-### 22. Update Lightsail Firewall
-
-**Di Lightsail Console:**
-1. **Masuk ke instance** → **Networking** tab
-2. **Firewall** section → **Add rule**:
-   - **Application**: `HTTPS`
-   - **Protocol**: `TCP`
-   - **Port**: `443`
-3. **Create**
-
-### 23. Test HTTPS Setup
-
-```bash
-# Test dari server
+# Test HTTPS
 curl https://be-ujikom.amayones.my.id
-curl https://be-ujikom.amayones.my.id/api
 
-# Test SSL certificate
-openssl s_client -connect be-ujikom.amayones.my.id:443 -servername be-ujikom.amayones.my.id
-```
-
-**Test dari browser:**
-- `https://be-ujikom.amayones.my.id`
-- `https://be-ujikom.amayones.my.id/api`
-- `https://be-ujikom.amayones.my.id/api/health`
-
-### 24. Update GitHub Actions untuk HTTPS
-
-**Update .env.example di repository:**
-```env
-APP_URL=https://be-ujikom.amayones.my.id
-```
-
-**Commit dan push:**
-```bash
-git add .
-git commit -m "Update APP_URL to HTTPS domain"
-git push origin main
+# Test dari browser:
+# https://be-ujikom.amayones.my.id/api
 ```
 
 ---
 
-## 🔒 Security & Performance Recommendations
+## 🔒 Production Optimizations
 
-### 25. Configure UFW Firewall
+### 21. Security Setup
 
 ```bash
-# Enable UFW
-sudo ufw enable
-
-# Allow SSH, HTTP, HTTPS
+# Configure firewall
 sudo ufw allow 22
 sudo ufw allow 80
 sudo ufw allow 443
+sudo ufw --force enable
 
-# Check status
-sudo ufw status
+# Setup SSL auto-renewal
+sudo certbot renew --dry-run
 ```
 
-### 26. Setup Monitoring
+### 22. Monitoring
 
 ```bash
-# Install htop untuk monitoring
-sudo apt install htop -y
+# Install monitoring tools
+sudo apt install htop net-tools -y
 
-# Check logs regularly
-sudo tail -f /var/log/nginx/access.log
+# Check logs
+sudo tail -f /var/log/nginx/error.log
+docker-compose logs -f
+```
+
+### 23. Backup Strategy
+
+```bash
+# Create backup script
+cat > /home/ubuntu/backup.sh << 'EOF'
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+mkdir -p /home/ubuntu/backups
+docker exec cinema-db mysqldump -u root -prootpassword123 cinema_db > /home/ubuntu/backups/cinema_db_$DATE.sql
+tar -czf /home/ubuntu/backups/cinema_app_$DATE.tar.gz /home/ubuntu/cinema
+find /home/ubuntu/backups -name "*.sql" -mtime +7 -delete
+find /home/ubuntu/backups -name "*.tar.gz" -mtime +7 -delete
+EOF
+
+chmod +x /home/ubuntu/backup.sh
+(crontab -l 2>/dev/null; echo "0 2 * * * /home/ubuntu/backup.sh") | crontab -
+```nx/access.log
 sudo tail -f /var/log/nginx/error.log
 docker-compose logs -f
 ```
@@ -832,30 +733,22 @@ chmod +x /home/ubuntu/backup.sh
 
 ---
 
-## ✅ Final Production Checklist
-
-- [ ] AWS Lightsail instance running
-- [ ] Static IP attached
-- [ ] Domain configured in Route53
-- [ ] A record pointing to static IP
-- [ ] SSL certificate installed
-- [ ] HTTPS redirect working
-- [ ] Firewall configured (UFW + Lightsail)
-- [ ] Auto-renewal SSL setup
-- [ ] Backup strategy implemented
-- [ ] Monitoring tools installed
-- [ ] GitHub Actions working with HTTPS
+## 🎉 Deployment Complete!
 
 **Production URLs:**
-- API Base: `https://be-ujikom.amayones.my.id/api`
-- Health Check: `https://be-ujikom.amayones.my.id/api/health`
-- Admin Panel: `https://be-ujikom.amayones.my.id/admin`
+- **API Base**: `https://be-ujikom.amayones.my.id/api`
+- **Health Check**: `https://be-ujikom.amayones.my.id/api/health`
+- **Admin Panel**: `https://be-ujikom.amayones.my.id/admin`
 
-**Security Features:**
+**Features:**
+- ✅ Auto-deployment via GitHub Actions
 - ✅ HTTPS/SSL encryption
-- ✅ Firewall protection
-- ✅ Auto-SSL renewal
-- ✅ Regular backups
-- ✅ Production environment
+- ✅ Docker containerization
+- ✅ Automated backups
+- ✅ Production optimized
 
-Deployment Production Ready! 🚀🔒
+**Default Login:**
+- Email: `admin@cinema.com`
+- Password: `password`
+
+🚀 **Cinema API Production Ready!**

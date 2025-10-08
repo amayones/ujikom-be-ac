@@ -13,16 +13,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.LIGHTSAIL_IP }} >> ~/.ssh/known_hosts
-
     - name: Deploy to server
-      run: |
-        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.LIGHTSAIL_IP }} << 'EOF'
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.LIGHTSAIL_IP }}
+        username: ubuntu
+        key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+        script: |
           cd /home/ubuntu/cinema
           
           # Pull latest changes
@@ -48,4 +45,3 @@ jobs:
           docker exec cinema-app chmod -R 755 /var/www/storage
           
           echo "✅ Deployment completed successfully!"
-        EOF

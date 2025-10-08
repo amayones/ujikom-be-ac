@@ -101,24 +101,33 @@ curl localhost
 ### 5. Generate SSH Key untuk Deploy
 
 ```bash
-# Generate SSH key
-ssh-keygen -t ed25519 -C "deploy@cinema-backend" -f ~/.ssh/cinema_deploy -N ""
+# Generate SSH key untuk GitHub Actions
+ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/github_actions -N ""
 
 # Set permissions
 chmod 700 ~/.ssh
+chmod 600 ~/.ssh/github_actions
+chmod 644 ~/.ssh/github_actions.pub
+
+# Add public key ke authorized_keys untuk GitHub Actions
+cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+
+# Generate SSH key untuk GitHub repository
+ssh-keygen -t ed25519 -C "deploy@cinema-backend" -f ~/.ssh/cinema_deploy -N ""
 chmod 600 ~/.ssh/cinema_deploy
 chmod 644 ~/.ssh/cinema_deploy.pub
 
-# Add to SSH agent
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/cinema_deploy
-
-# Copy public key
+# Copy public key untuk GitHub Deploy Key
 cat ~/.ssh/cinema_deploy.pub
-```
 
+# Copy private key untuk GitHub Actions Secret
+cat ~/.ssh/github_actions
+```
 **Setup di GitHub:**
-1. Copy output dari command di atas
+
+**A. Deploy Key (untuk git clone/pull):**
+1. Copy output dari `cat ~/.ssh/cinema_deploy.pub`
 2. Masuk ke GitHub repo → **Settings** → **Deploy keys**
 3. **Add deploy key**:
    - Title: `Cinema Backend Deploy Key`
@@ -126,16 +135,55 @@ cat ~/.ssh/cinema_deploy.pub
    - ✅ **Allow write access**
 4. **Add deploy key**
 
-### 6. Test GitHub Connection
+**B. GitHub Actions Secret (untuk SSH connection):**
+1. Copy output dari `cat ~/.ssh/github_actions` (SELURUH OUTPUT termasuk BEGIN/END)
+2. Masuk ke GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+3. **Add secret**:
+   - Name: `LIGHTSAIL_SSH_KEY`
+   - Value: Paste private key
+4. **Add secret**:
+   - Name: `LIGHTSAIL_IP`
+   - Value: Your static IP address
+
+### 6. Setup SSH Config & Test Connections
 
 ```bash
-# Test connection
-ssh -T git@github.com -i ~/.ssh/cinema_deploy
+# Create SSH config untuk GitHub
+cat > ~/.ssh/config << 'EOF'
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/cinema_deploy
+    IdentitiesOnly yes
+EOF
 
-# Clone repository
+# Set permission SSH config
+chmod 600 ~/.ssh/config
+
+# Test GitHub connection
+ssh -T git@github.com
+
+# Test GitHub Actions SSH (should work without password)
+ssh -i ~/.ssh/github_actions ubuntu@localhost
+
+# Clone repository (ganti USERNAME/REPO_NAME dengan repo kamu)
 cd /home/ubuntu
 git clone git@github.com:USERNAME/REPO_NAME.git cinema
 cd cinema
+```
+
+**Jika masih error saat `ssh -T git@github.com`:**
+```bash
+# Debug SSH connection
+ssh -vT git@github.com
+
+# Atau test dengan explicit key
+ssh -T git@github.com -i ~/.ssh/cinema_deploy
+
+# Pastikan SSH agent running
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/cinema_deploy
+ssh -T git@github.com
 ```
 
 ---
@@ -385,73 +433,43 @@ curl localhost
 
 ## 🔄 Setup GitHub Actions
 
-### 12. GitHub Secrets Setup
+### 12. Verify GitHub Secrets
 
-Di GitHub repo → **Settings** → **Secrets and variables** → **Actions**:
+**Pastikan secrets sudah benar di GitHub repo → Settings → Secrets and variables → Actions:**
 
 1. **LIGHTSAIL_IP**: `YOUR_STATIC_IP`
-2. **LIGHTSAIL_SSH_KEY**: 
-   ```bash
-   # Di server, copy private key
-   cat ~/.ssh/cinema_deploy
-   ```
-   Copy seluruh output termasuk `-----BEGIN` dan `-----END`
+2. **LIGHTSAIL_SSH_KEY**: Private key dari `~/.ssh/github_actions` (sudah di-setup di langkah 5)
 
-### 13. Update GitHub Actions Workflow
-
-```yaml
-name: Deploy Cinema to AWS Lightsail
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.LIGHTSAIL_IP }} >> ~/.ssh/known_hosts
-
-    - name: Deploy to server
-      run: |
-        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.LIGHTSAIL_IP }} << 'EOF'
-          cd /home/ubuntu/cinema
-          
-          # Pull latest changes
-          git pull origin main
-          
-          # Stop containers
-          docker-compose down
-          
-          # Rebuild and start
-          docker-compose build --no-cache
-          docker-compose up -d
-          
-          # Wait for containers
-          sleep 30
-          
-          # Laravel setup
-          docker exec cinema-app php artisan config:cache
-          docker exec cinema-app php artisan route:cache
-          docker exec cinema-app php artisan migrate --force
-          
-          # Set permissions
-          docker exec cinema-app chown -R www-data:www-data /var/www/storage
-          docker exec cinema-app chmod -R 755 /var/www/storage
-          
-          echo "✅ Deployment completed successfully!"
-        EOF
+**Format LIGHTSAIL_SSH_KEY harus seperti ini:**
 ```
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA...
+...
+-----END RSA PRIVATE KEY-----
+```
+
+**Test GitHub Actions SSH:**
+```bash
+# Di server, test apakah GitHub Actions bisa connect
+ssh -i ~/.ssh/github_actions ubuntu@localhost
+# Jika berhasil tanpa password, berarti setup benar
+```
+
+### 13. GitHub Actions Workflow (Sudah Dibuat)
+
+File `.github/workflows/deploy.yml` sudah dibuat dengan konfigurasi yang benar menggunakan `appleboy/ssh-action` yang lebih reliable untuk SSH connection.
+
+**Workflow akan:**
+1. Checkout code dari repository
+2. Connect ke server menggunakan SSH key
+3. Pull latest changes dari GitHub
+4. Rebuild dan restart Docker containers
+5. Run Laravel migrations dan optimizations
+6. Set proper permissions
+
+**Trigger deployment:**
+- Otomatis saat push ke branch `main`
+- Manual via GitHub Actions tab → "Run workflow"
 
 ---
 
@@ -488,6 +506,17 @@ htop
 
 ### 15. Common Issues & Solutions
 
+**GitHub Actions SSH Error (Permission denied):**
+```bash
+# Re-generate GitHub Actions SSH key
+ssh-keygen -t rsa -b 4096 -C "github-actions" -f ~/.ssh/github_actions -N ""
+cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+
+# Copy private key dan update GitHub Secret LIGHTSAIL_SSH_KEY
+cat ~/.ssh/github_actions
+```
+
 **Container tidak start:**
 ```bash
 docker-compose down
@@ -511,6 +540,17 @@ docker exec cinema-db mysql -u root -p -e "SHOW DATABASES;"
 sudo nginx -t
 sudo systemctl status nginx
 sudo tail -f /var/log/nginx/error.log
+```
+
+**Git pull error:**
+```bash
+# Setup git config jika belum
+git config --global user.email "deploy@cinema.com"
+git config --global user.name "Cinema Deploy"
+
+# Reset jika ada conflict
+git reset --hard origin/main
+git pull origin main
 ```
 
 ---

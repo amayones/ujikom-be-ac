@@ -1,42 +1,51 @@
-name: Deploy Cinema
+name: Deploy Cinema to AWS Lightsail
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.5
-        with:
-          host: ${{ secrets.LIGHTSAIL_IP }}
-          username: ubuntu
-          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-          source: "."
-          target: "/home/ubuntu/cinema"
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.LIGHTSAIL_IP }} >> ~/.ssh/known_hosts
 
-      - name: SSH commands
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.LIGHTSAIL_IP }}
-          username: ubuntu
-          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-          script: |
-            cd /home/ubuntu/cinema
-            if [ ! -f .env ]; then
-                cp .env.example .env
-            fi
-            sudo chown -R www-data:www-data /home/ubuntu/cinema
-            sudo chmod -R 755 /home/ubuntu/cinema
-            docker-compose down
-            docker-compose up -d --build
-            sleep 15
-            docker exec cinema-app php artisan key:generate
-            docker exec cinema-app php artisan migrate --seed
-            echo "✅ Deploy selesai, Laravel sudah siap!"
+    - name: Deploy to server
+      run: |
+        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.LIGHTSAIL_IP }} << 'EOF'
+          cd /home/ubuntu/cinema
+          
+          # Pull latest changes
+          git pull origin main
+          
+          # Stop containers
+          docker-compose down
+          
+          # Rebuild and start
+          docker-compose build --no-cache
+          docker-compose up -d
+          
+          # Wait for containers
+          sleep 30
+          
+          # Laravel setup
+          docker exec cinema-app php artisan config:cache
+          docker exec cinema-app php artisan route:cache
+          docker exec cinema-app php artisan migrate --force
+          
+          # Set permissions
+          docker exec cinema-app chown -R www-data:www-data /var/www/storage
+          docker exec cinema-app chmod -R 755 /var/www/storage
+          
+          echo "✅ Deployment completed successfully!"
+        EOF

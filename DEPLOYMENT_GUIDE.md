@@ -348,6 +348,8 @@ SESSION_DRIVER=file
 SESSION_LIFETIME=120
 ```
 
+**Note:** APP_URL akan diupdate ke HTTPS domain di langkah 20
+
 ---
 
 ## 🌐 Setup Nginx Reverse Proxy
@@ -579,12 +581,281 @@ git pull origin main
 
 ---
 
-## 🔒 Security Recommendations
+## 🌐 Setup Domain & HTTPS (Route53 + Let's Encrypt)
 
-1. **Setup SSL Certificate** (Let's Encrypt)
-2. **Configure Firewall** (UFW)
-3. **Regular Backups**
-4. **Monitor Logs**
-5. **Update Dependencies**
+### 16. Setup Domain di Route53
 
-Deployment selesai! 🎉
+**A. Setup Subdomain (Domain sudah ada):**
+1. **AWS Console** → **Route53** → **Hosted zones**
+2. **Pilih hosted zone**: `amayones.my.id`
+3. **Create record**:
+   - **Record name**: `be-ujikom`
+   - **Record type**: `A`
+   - **Value**: `YOUR_LIGHTSAIL_STATIC_IP`
+   - **TTL**: `300`
+4. **Create records**
+
+**B. Test DNS:**
+```bash
+# Test dari local computer
+nslookup be-ujikom.amayones.my.id
+
+# Atau test dengan dig
+dig be-ujikom.amayones.my.id
+```
+
+### 17. Install Certbot untuk SSL
+
+```bash
+# Install Certbot
+sudo apt update
+sudo apt install snapd -y
+sudo snap install core; sudo snap refresh core
+sudo snap install --classic certbot
+
+# Create symlink
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+
+# Test certbot
+certbot --version
+```
+
+### 18. Update Nginx untuk Domain
+
+```bash
+# Update Nginx config untuk domain
+sudo tee /etc/nginx/sites-available/cinema << 'EOF'
+server {
+    listen 80;
+    server_name be-ujikom.amayones.my.id;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+    }
+}
+EOF
+
+# Test dan restart Nginx
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### 19. Generate SSL Certificate
+
+```bash
+# Generate SSL certificate dengan Certbot
+sudo certbot --nginx -d be-ujikom.amayones.my.id
+
+# Ikuti prompts:
+# 1. Enter email address
+# 2. Agree to terms (Y)
+# 3. Share email with EFF (Y/N - pilihan)
+# 4. Pilih redirect HTTP to HTTPS (2)
+```
+
+**Certbot akan otomatis update Nginx config menjadi:**
+```nginx
+server {
+    server_name be-ujikom.amayones.my.id;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/be-ujikom.amayones.my.id/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/be-ujikom.amayones.my.id/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+
+server {
+    if ($host = be-ujikom.amayones.my.id) {
+        return 301 https://$host$request_uri;
+    }
+
+    listen 80;
+    server_name be-ujikom.amayones.my.id;
+    return 404;
+}
+```
+
+### 20. Update Laravel Environment
+
+```bash
+# Update .env file
+cd /home/ubuntu/cinema
+nano .env
+```
+
+**Update APP_URL di .env:**
+```env
+APP_URL=https://be-ujikom.amayones.my.id
+APP_ENV=production
+APP_DEBUG=false
+```
+
+```bash
+# Restart containers untuk apply changes
+docker-compose restart
+
+# Clear cache
+docker exec cinema-app php artisan config:cache
+docker exec cinema-app php artisan route:cache
+```
+
+### 21. Setup Auto-Renewal SSL
+
+```bash
+# Test auto-renewal
+sudo certbot renew --dry-run
+
+# Check crontab (sudah otomatis di-setup oleh snap)
+sudo systemctl status snap.certbot.renew.timer
+
+# Manual renewal jika diperlukan
+sudo certbot renew
+```
+
+### 22. Update Lightsail Firewall
+
+**Di Lightsail Console:**
+1. **Masuk ke instance** → **Networking** tab
+2. **Firewall** section → **Add rule**:
+   - **Application**: `HTTPS`
+   - **Protocol**: `TCP`
+   - **Port**: `443`
+3. **Create**
+
+### 23. Test HTTPS Setup
+
+```bash
+# Test dari server
+curl https://be-ujikom.amayones.my.id
+curl https://be-ujikom.amayones.my.id/api
+
+# Test SSL certificate
+openssl s_client -connect be-ujikom.amayones.my.id:443 -servername be-ujikom.amayones.my.id
+```
+
+**Test dari browser:**
+- `https://be-ujikom.amayones.my.id`
+- `https://be-ujikom.amayones.my.id/api`
+- `https://be-ujikom.amayones.my.id/api/health`
+
+### 24. Update GitHub Actions untuk HTTPS
+
+**Update .env.example di repository:**
+```env
+APP_URL=https://be-ujikom.amayones.my.id
+```
+
+**Commit dan push:**
+```bash
+git add .
+git commit -m "Update APP_URL to HTTPS domain"
+git push origin main
+```
+
+---
+
+## 🔒 Security & Performance Recommendations
+
+### 25. Configure UFW Firewall
+
+```bash
+# Enable UFW
+sudo ufw enable
+
+# Allow SSH, HTTP, HTTPS
+sudo ufw allow 22
+sudo ufw allow 80
+sudo ufw allow 443
+
+# Check status
+sudo ufw status
+```
+
+### 26. Setup Monitoring
+
+```bash
+# Install htop untuk monitoring
+sudo apt install htop -y
+
+# Check logs regularly
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+docker-compose logs -f
+```
+
+### 27. Backup Strategy
+
+```bash
+# Create backup script
+cat > /home/ubuntu/backup.sh << 'EOF'
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/home/ubuntu/backups"
+
+# Create backup directory
+mkdir -p $BACKUP_DIR
+
+# Backup database
+docker exec cinema-db mysqldump -u root -prootpassword123 cinema_db > $BACKUP_DIR/cinema_db_$DATE.sql
+
+# Backup application files
+tar -czf $BACKUP_DIR/cinema_app_$DATE.tar.gz /home/ubuntu/cinema
+
+# Keep only last 7 days
+find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
+find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
+
+echo "Backup completed: $DATE"
+EOF
+
+# Make executable
+chmod +x /home/ubuntu/backup.sh
+
+# Add to crontab (daily backup at 2 AM)
+(crontab -l 2>/dev/null; echo "0 2 * * * /home/ubuntu/backup.sh") | crontab -
+```
+
+---
+
+## ✅ Final Production Checklist
+
+- [ ] AWS Lightsail instance running
+- [ ] Static IP attached
+- [ ] Domain configured in Route53
+- [ ] A record pointing to static IP
+- [ ] SSL certificate installed
+- [ ] HTTPS redirect working
+- [ ] Firewall configured (UFW + Lightsail)
+- [ ] Auto-renewal SSL setup
+- [ ] Backup strategy implemented
+- [ ] Monitoring tools installed
+- [ ] GitHub Actions working with HTTPS
+
+**Production URLs:**
+- API Base: `https://be-ujikom.amayones.my.id/api`
+- Health Check: `https://be-ujikom.amayones.my.id/api/health`
+- Admin Panel: `https://be-ujikom.amayones.my.id/admin`
+
+**Security Features:**
+- ✅ HTTPS/SSL encryption
+- ✅ Firewall protection
+- ✅ Auto-SSL renewal
+- ✅ Regular backups
+- ✅ Production environment
+
+Deployment Production Ready! 🚀🔒

@@ -354,11 +354,14 @@ docker-compose up -d
 # Wait for containers to start
 sleep 30
 
+# Installing composer
+docker exec cinema-app composer install
+
 # Generate app key
-docker exec cinema-app php artisan key:generate
+docker exec cinema-app php artisan key:generate --force
 
 # Run migrations
-docker exec cinema-app php artisan migrate --seed
+docker exec cinema-app php artisan migrate --seed --force
 
 # Set permissions
 docker exec cinema-app chown -R www-data:www-data /var/www/storage

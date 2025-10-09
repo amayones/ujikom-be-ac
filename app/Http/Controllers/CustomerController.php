@@ -11,87 +11,46 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
-    public function getFilms(Request $request)
+    public function home()
     {
-        $request->validate(['status' => 'nullable|in:play_now,coming_soon,history']);
+        $films = Film::where('status', 'play_now')->take(6)->get();
+        return view('customer.home', compact('films'));
+    }
+
+    public function films(Request $request)
+    {
         $status = $request->get('status', 'play_now');
-        return Film::where('status', $status)->get();
+        $films = Film::where('status', $status)->paginate(12);
+        return view('customer.films', compact('films', 'status'));
     }
 
-    public function getFilmDetail($id)
+    public function filmDetail($id)
     {
-        return Film::with('schedules.studio')->findOrFail($id);
+        $film = Film::with('schedules.studio')->findOrFail($id);
+        return view('customer.film-detail', compact('film'));
     }
 
-    public function getSchedules($filmId)
+    public function profile()
     {
-        $filmId = (int) $filmId;
-        return Schedule::with(['studio', 'price'])
+        return view('customer.profile');
+    }
+
+    public function booking($filmId)
+    {
+        $film = Film::findOrFail($filmId);
+        $schedules = Schedule::with(['studio', 'price'])
             ->where('film_id', $filmId)
             ->where('date', '>=', now()->toDateString())
             ->get();
+        return view('customer.booking', compact('film', 'schedules'));
     }
 
-    public function getAvailableSeats($scheduleId)
+    public function history()
     {
-        $scheduleId = (int) $scheduleId;
-        return ScheduleSeat::where('schedule_id', $scheduleId)
-            ->where('status', 'available')
-            ->get();
-    }
-
-    public function bookTicket(Request $request)
-    {
-        $validated = $request->validate([
-            'schedule_id' => 'required|exists:schedules,id',
-            'seat_ids' => 'required|array',
-            'seat_ids.*' => 'exists:schedule_seats,id'
-        ]);
-
-        $order = Order::create([
-            'user_id' => Auth::id(),
-            'schedule_id' => $validated['schedule_id'],
-            'order_date' => now(),
-            'status' => 'pending'
-        ]);
-
-        // Use database transaction for seat booking
-        \DB::transaction(function () use ($validated, $order) {
-            foreach ($validated['seat_ids'] as $seatId) {
-                $updated = ScheduleSeat::where('id', $seatId)
-                    ->where('status', 'available')
-                    ->update(['status' => 'booked']);
-                
-                if (!$updated) {
-                    throw new \Exception('Seat no longer available');
-                }
-            }
-        });
-
-        return response()->json(['order' => $order], 201);
-    }
-
-    public function getOrderHistory()
-    {
-        return Order::with(['schedule.film', 'orderDetails'])
+        $orders = Order::with(['schedule.film'])
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
-            ->get();
-    }
-
-    public function updateProfile(Request $request)
-    {
-        $validated = $request->validate([
-            'nama' => 'string|max:255',
-            'no_hp' => 'string|max:15',
-            'alamat' => 'string|max:500'
-        ]);
-
-        Auth::user()->update($validated);
-        return response()->json([
-            'success' => true,
-            'user' => Auth::user(),
-            'message' => 'Profile berhasil diperbarui'
-        ]);
+            ->paginate(10);
+        return view('customer.history', compact('orders'));
     }
 }

@@ -1,71 +1,61 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OwnerController;
+use App\Http\Controllers\CashierController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
 
-// Route untuk setup database production
-Route::get('/setup-db', function () {
-    try {
-        // Cek apakah user test sudah ada
-        $existingUser = User::where('email', 'test@test.com')->first();
-        
-        if ($existingUser) {
-            return response()->json([
-                'message' => 'User test sudah ada',
-                'user' => $existingUser->only(['nama', 'email', 'role'])
-            ]);
-        }
-        
-        // Buat user test
-        $user = User::create([
-            'nama' => 'Test User',
-            'email' => 'test@test.com',
-            'password' => Hash::make('test123'),
-            'no_hp' => '081234567890',
-            'alamat' => 'Jl. Test No. 123',
-            'role' => 'customer'
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'User test berhasil dibuat',
-            'user' => $user->only(['nama', 'email', 'role']),
-            'credentials' => [
-                'email' => 'test@test.com',
-                'password' => 'test123'
-            ]
-        ]);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ], 500);
-    }
-});
+// Public routes
+Route::get('/', [CustomerController::class, 'home'])->name('home');
+Route::get('/films', [CustomerController::class, 'films'])->name('films');
+Route::get('/films/{id}', [CustomerController::class, 'filmDetail'])->name('film.detail');
 
-// Route untuk cek database structure
-Route::get('/check-db', function () {
-    try {
-        $users = User::select(['id', 'nama', 'email', 'role'])->limit(5)->get();
-        
-        return response()->json([
-            'success' => true,
-            'users_count' => User::count(),
-            'sample_users' => $users,
-            'table_columns' => \Schema::getColumnListing('users')
-        ]);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage()
-        ], 500);
-    }
+// Auth routes
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Authenticated routes
+Route::middleware('auth')->group(function () {
+    // Customer routes
+    Route::middleware('role:customer')->group(function () {
+        Route::get('/profile', [CustomerController::class, 'profile'])->name('customer.profile');
+        Route::get('/booking/{filmId}', [CustomerController::class, 'booking'])->name('customer.booking');
+        Route::get('/history', [CustomerController::class, 'history'])->name('customer.history');
+    });
+
+    // Admin routes
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::resource('films', AdminController::class);
+        Route::get('/schedules', [AdminController::class, 'schedules'])->name('schedules');
+        Route::get('/customers', [AdminController::class, 'customers'])->name('customers');
+    });
+
+    // Owner routes
+    Route::middleware('role:owner')->prefix('owner')->name('owner.')->group(function () {
+        Route::get('/dashboard', [OwnerController::class, 'dashboard'])->name('dashboard');
+        Route::get('/reports', [OwnerController::class, 'reports'])->name('reports');
+    });
+
+    // Cashier routes
+    Route::middleware('role:cashier')->prefix('cashier')->name('cashier.')->group(function () {
+        Route::get('/dashboard', [CashierController::class, 'dashboard'])->name('dashboard');
+        Route::get('/transactions', [CashierController::class, 'transactions'])->name('transactions');
+    });
 });

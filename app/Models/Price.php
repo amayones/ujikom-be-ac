@@ -7,18 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Price extends Model
 {
     protected $fillable = [
-        'type',
+        'category',
         'price',
-        'created_by',
+        'description',
+        'status',
     ];
 
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
+    protected $casts = [
+        'price' => 'decimal:2',
+    ];
 
     public function schedules()
     {
-        return $this->hasMany(Schedule::class, 'price_id');
+        return $this->hasMany(Schedule::class);
     }
 }

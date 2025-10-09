@@ -10,6 +10,11 @@ class ScheduleSeat extends Model
         'schedule_id',
         'studio_seat_id',
         'status',
+        'price',
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
     ];
 
     public function schedule()
@@ -20,10 +25,5 @@ class ScheduleSeat extends Model
     public function studioSeat()
     {
         return $this->belongsTo(StudioSeat::class);
-    }
-
-    public function orderDetails()
-    {
-        return $this->hasMany(OrderDetail::class);
     }
 }

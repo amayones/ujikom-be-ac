@@ -8,10 +8,16 @@ class Payment extends Model
 {
     protected $fillable = [
         'order_id',
-        'method',
-        'total_amount',
+        'amount',
+        'payment_method',
         'payment_status',
         'payment_date',
+        'transaction_id',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'payment_date' => 'datetime',
     ];
 
     public function order()

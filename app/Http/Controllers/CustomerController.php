@@ -82,12 +82,16 @@ class CustomerController extends Controller
     public function updateProfile(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'string',
-            'phone' => 'string',
-            'address' => 'string'
+            'nama' => 'string|max:255',
+            'no_hp' => 'string|max:15',
+            'alamat' => 'string|max:500'
         ]);
 
         Auth::user()->update($validated);
-        return response()->json(['user' => Auth::user()]);
+        return response()->json([
+            'success' => true,
+            'user' => Auth::user(),
+            'message' => 'Profile berhasil diperbarui'
+        ]);
     }
 }

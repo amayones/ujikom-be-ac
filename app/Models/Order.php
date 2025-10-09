@@ -9,9 +9,17 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'schedule_id',
-        'order_date',
-        'status',
         'cashier_id',
+        'order_date',
+        'total_amount',
+        'status',
+        'payment_method',
+        'ticket_code',
+    ];
+
+    protected $casts = [
+        'order_date' => 'datetime',
+        'total_amount' => 'decimal:2',
     ];
 
     public function user()
@@ -34,13 +42,8 @@ class Order extends Model
         return $this->hasMany(OrderDetail::class);
     }
 
-    public function payments()
+    public function payment()
     {
-        return $this->hasMany(Payment::class);
-    }
-
-    public function invoices()
-    {
-        return $this->hasMany(Invoice::class);
+        return $this->hasOne(Payment::class);
     }
 }

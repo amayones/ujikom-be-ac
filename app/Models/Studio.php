@@ -9,21 +9,17 @@ class Studio extends Model
     protected $fillable = [
         'name',
         'capacity',
-        'created_by',
+        'type',
+        'status',
     ];
-
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function seats()
-    {
-        return $this->hasMany(StudioSeat::class);
-    }
 
     public function schedules()
     {
         return $this->hasMany(Schedule::class);
+    }
+
+    public function studioSeats()
+    {
+        return $this->hasMany(StudioSeat::class);
     }
 }

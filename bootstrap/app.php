@@ -16,8 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
         
-        // Add security headers to API routes
+        // Add CORS and security headers to API routes
         $middleware->api([
+            \Illuminate\Http\Middleware\HandleCors::class,
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })

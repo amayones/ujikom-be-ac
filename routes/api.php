@@ -13,6 +13,15 @@ Route::middleware('throttle:5,1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
+// Test route
+Route::get('/test', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'API is working',
+        'timestamp' => now()
+    ]);
+});
+
 // Public routes (no auth required)
 Route::get('/films', [CustomerController::class, 'getFilms']);
 Route::get('/films/{id}', [CustomerController::class, 'getFilmDetail']);

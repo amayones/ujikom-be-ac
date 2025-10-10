@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,4 +18,12 @@ use Illuminate\Support\Facades\Route;
 // Simple test route
 Route::get('/test', function () {
     return response()->json(['message' => 'Backend is working!']);
+});
+
+// Admin routes for films CRUD
+Route::prefix('admin')->group(function () {
+    Route::get('/films', [AdminController::class, 'getFilms']);
+    Route::post('/films', [AdminController::class, 'storeFilm']);
+    Route::put('/films/{id}', [AdminController::class, 'updateFilm']);
+    Route::delete('/films/{id}', [AdminController::class, 'deleteFilm']);
 });

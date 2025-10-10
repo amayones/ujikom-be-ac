@@ -22,6 +22,7 @@ Route::get('/test', function () {
 
 // Admin routes for films CRUD
 Route::prefix('admin')->group(function () {
+    Route::get('/test', [AdminController::class, 'testConnection']);
     Route::get('/films', [AdminController::class, 'getFilms']);
     Route::post('/films', [AdminController::class, 'storeFilm']);
     Route::put('/films/{id}', [AdminController::class, 'updateFilm']);

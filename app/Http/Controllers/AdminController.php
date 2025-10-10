@@ -12,14 +12,36 @@ class AdminController extends Controller
     {
         try {
             $films = Film::orderBy('created_at', 'desc')->get();
+            
+            // If no films found, return empty array with success
             return response()->json([
                 'success' => true,
-                'data' => $films
+                'data' => $films,
+                'count' => $films->count()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching films: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch films: ' . $e->getMessage(),
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function testConnection()
+    {
+        try {
+            return response()->json([
+                'success' => true,
+                'message' => 'Backend connection successful',
+                'timestamp' => now(),
+                'database' => \DB::connection()->getPdo() ? 'Connected' : 'Disconnected'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch films'
+                'message' => 'Backend connection failed: ' . $e->getMessage()
             ], 500);
         }
     }

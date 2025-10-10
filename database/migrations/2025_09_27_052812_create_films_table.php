@@ -18,8 +18,10 @@ return new class extends Migration
             $table->integer('duration');
             $table->text('description');
             $table->string('status');
-            $table->string('poster');
-            $table->foreignId('created_by')->constrained('users');
+            $table->string('poster')->nullable();
+            $table->string('director')->nullable();
+            $table->date('release_date')->nullable();
+            $table->unsignedBigInteger('created_by')->default(1);
             $table->timestamps();
         });
     }

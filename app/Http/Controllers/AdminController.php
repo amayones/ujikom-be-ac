@@ -11,20 +11,29 @@ class AdminController extends Controller
     public function getFilms()
     {
         try {
+            // Check if Film model exists
+            if (!class_exists('App\\Models\\Film')) {
+                throw new \Exception('Film model not found');
+            }
+            
             $films = Film::orderBy('created_at', 'desc')->get();
             
-            // If no films found, return empty array with success
             return response()->json([
                 'success' => true,
                 'data' => $films,
-                'count' => $films->count()
+                'count' => $films->count(),
+                'message' => 'Films fetched successfully'
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching films: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch films: ' . $e->getMessage(),
-                'error' => $e->getMessage()
+                'message' => 'Database error: ' . $e->getMessage(),
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ], 500);
         }
     }

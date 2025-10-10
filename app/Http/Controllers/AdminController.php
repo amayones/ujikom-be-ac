@@ -12,30 +12,37 @@ class AdminController extends Controller
     public function getFilms()
     {
         try {
-            // Check if Film model exists
-            if (!class_exists('App\\Models\\Film')) {
-                throw new \Exception('Film model not found');
-            }
-            
+            // Try to get films from database
             $films = Film::orderBy('created_at', 'desc')->get();
             
             return response()->json([
                 'success' => true,
                 'data' => $films,
-                'count' => $films->count(),
-                'message' => 'Films fetched successfully'
+                'count' => $films->count()
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching films: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
             
-            return response()->json([
-                'success' => false,
-                'message' => 'Database error: ' . $e->getMessage(),
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
-            ], 500);
+            // If database error, try to run migrations and seed
+            try {
+                \Artisan::call('migrate:fresh', ['--force' => true]);
+                \Artisan::call('db:seed', ['--force' => true]);
+                
+                // Try again after migration
+                $films = Film::orderBy('created_at', 'desc')->get();
+                
+                return response()->json([
+                    'success' => true,
+                    'data' => $films,
+                    'count' => $films->count(),
+                    'message' => 'Database reset and films loaded'
+                ]);
+            } catch (\Exception $e2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Database error: ' . $e2->getMessage()
+                ], 500);
+            }
         }
     }
     
@@ -76,12 +83,12 @@ class AdminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'genre' => 'required|string|max:100',
+            'genre' => 'required|string',
             'duration' => 'required|integer|min:1',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'status' => 'required|in:play_now,coming_soon,history',
-            'director' => 'required|string|max:255',
-            'release_date' => 'required|date',
+            'director' => 'nullable|string|max:255',
+            'release_date' => 'nullable|date',
             'poster' => 'nullable|string'
         ]);
 
@@ -98,12 +105,12 @@ class AdminController extends Controller
                 'title' => $request->title,
                 'genre' => $request->genre,
                 'duration' => $request->duration,
-                'description' => $request->description,
+                'description' => $request->description ?? '',
                 'status' => $request->status,
-                'director' => $request->director,
-                'release_date' => $request->release_date,
-                'poster' => $request->poster ?? '/ac.jpg',
-                'created_by' => 1 // Default admin user
+                'director' => $request->director ?? 'Unknown',
+                'release_date' => $request->release_date ?? now()->format('Y-m-d'),
+                'poster' => $request->poster ?? 'https://be-ujikom.amayones.my.id/ac.jpg',
+                'created_by' => 1
             ]);
 
             return response()->json([
@@ -112,9 +119,10 @@ class AdminController extends Controller
                 'data' => $film
             ], 201);
         } catch (\Exception $e) {
+            \Log::error('Error creating film: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create film'
+                'message' => 'Failed to create film: ' . $e->getMessage()
             ], 500);
         }
     }

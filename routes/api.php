@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,17 +14,6 @@ use App\Http\Controllers\AdminController;
 |
 */
 
-// Simple test route
-Route::get('/test', function () {
-    return response()->json(['message' => 'Backend is working!']);
-});
-
-// Admin routes for films CRUD
-Route::prefix('admin')->group(function () {
-    Route::get('/test', [AdminController::class, 'testConnection']);
-    Route::get('/genres', [AdminController::class, 'getGenres']);
-    Route::get('/films', [AdminController::class, 'getFilms']);
-    Route::post('/films', [AdminController::class, 'storeFilm']);
-    Route::put('/films/{id}', [AdminController::class, 'updateFilm']);
-    Route::delete('/films/{id}', [AdminController::class, 'deleteFilm']);
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
 });

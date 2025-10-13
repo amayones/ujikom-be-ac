@@ -3,64 +3,47 @@
 namespace App\Http\Controllers;
 
 use App\Models\Film;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreFilmRequest;
+use App\Http\Requests\UpdateFilmRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
-class FilmController extends Controller
+class FilmController extends BaseController
 {
     public function index(): JsonResponse
     {
         $films = Film::with('creator')->orderBy('created_at', 'desc')->get();
-        return response()->json($films);
+        return $this->success($films);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreFilmRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'genre' => 'required|string',
-            'duration' => 'required|integer|min:1',
-            'description' => 'required|string',
-            'status' => 'required|in:play_now,coming_soon',
-            'poster' => 'nullable|string',
-            'director' => 'nullable|string|max:255',
-            'release_date' => 'nullable|date'
-        ]);
+        $validated = $request->validated();
+        $film = Film::create(array_merge($validated, ['created_by' => Auth::id()]));
 
-        $validated['created_by'] = Auth::id();
-        $film = Film::create($validated);
-
-        return response()->json($film->load('creator'), 201);
+        return $this->success($film, 'Film berhasil ditambahkan', 201);
     }
 
     public function show(Film $film): JsonResponse
     {
-        return response()->json($film->load('creator'));
+        return $this->success($film->load('creator'));
     }
 
-    public function update(Request $request, Film $film): JsonResponse
+    public function update(UpdateFilmRequest $request, Film $film): JsonResponse
     {
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'genre' => 'sometimes|string',
-            'duration' => 'sometimes|integer|min:1',
-            'description' => 'sometimes|string',
-            'status' => 'sometimes|in:play_now,coming_soon',
-            'poster' => 'nullable|string',
-            'director' => 'nullable|string|max:255',
-            'release_date' => 'nullable|date'
-        ]);
-
+        $validated = $request->validated();
         $film->update($validated);
 
-        return response()->json($film->load('creator'));
+        return $this->success($film, 'Film berhasil diupdate');
     }
 
     public function destroy(Film $film): JsonResponse
     {
+        if ($film->schedules()->exists()) {
+            return $this->error('Film masih memiliki jadwal tayang', 400);
+        }
+        
         $film->delete();
-
-        return response()->json(['message' => 'Film deleted successfully']);
+        return $this->success(null, 'Film berhasil dihapus');
     }
 }

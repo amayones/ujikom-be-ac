@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Schedule extends Model
 {
@@ -15,6 +16,17 @@ class Schedule extends Model
         'created_by',
     ];
 
+    protected $casts = [
+        'date' => 'date',
+    ];
+
+    protected function price(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->price_relation?->price ?? 50000,
+        );
+    }
+
     public function film()
     {
         return $this->belongsTo(Film::class);
@@ -25,7 +37,7 @@ class Schedule extends Model
         return $this->belongsTo(Studio::class);
     }
 
-    public function price()
+    public function price_relation()
     {
         return $this->belongsTo(Price::class, 'price_id');
     }

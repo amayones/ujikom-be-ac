@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Price extends Model
 {
     protected $fillable = [
-        'category',
+        'type',
         'price',
-        'description',
-        'status',
+        'created_by',
     ];
 
     protected $casts = [

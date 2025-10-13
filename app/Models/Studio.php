@@ -9,8 +9,7 @@ class Studio extends Model
     protected $fillable = [
         'name',
         'capacity',
-        'type',
-        'status',
+        'created_by',
     ];
 
     public function schedules()

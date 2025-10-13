@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Film extends Model
 {
@@ -18,6 +19,11 @@ class Film extends Model
         'created_by',
     ];
 
+    protected $casts = [
+        'release_date' => 'date',
+        'duration' => 'integer',
+    ];
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -28,18 +34,19 @@ class Film extends Model
         return $this->hasMany(Schedule::class);
     }
 
-    // Helper methods for genre handling
-    public function getGenreArrayAttribute()
+    // Modern Laravel attribute accessor
+    protected function genreArray(): Attribute
     {
-        return explode(', ', $this->genre);
+        return Attribute::make(
+            get: fn () => explode(', ', $this->genre ?? ''),
+        );
     }
 
-    public function setGenreAttribute($value)
+    // Modern Laravel attribute mutator
+    protected function genre(): Attribute
     {
-        if (is_array($value)) {
-            $this->attributes['genre'] = implode(', ', $value);
-        } else {
-            $this->attributes['genre'] = $value;
-        }
+        return Attribute::make(
+            set: fn ($value) => is_array($value) ? implode(', ', $value) : $value,
+        );
     }
 }

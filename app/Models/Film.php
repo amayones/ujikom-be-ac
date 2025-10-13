@@ -27,4 +27,19 @@ class Film extends Model
     {
         return $this->hasMany(Schedule::class);
     }
+
+    // Helper methods for genre handling
+    public function getGenreArrayAttribute()
+    {
+        return explode(', ', $this->genre);
+    }
+
+    public function setGenreAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['genre'] = implode(', ', $value);
+        } else {
+            $this->attributes['genre'] = $value;
+        }
+    }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('films', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('genre');
+            $table->text('genre'); // Can store multiple genres separated by comma
             $table->integer('duration');
             $table->text('description');
             $table->string('status');

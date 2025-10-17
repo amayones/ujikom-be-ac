@@ -1,0 +1,47 @@
+name: Deploy Cinema to AWS Lightsail
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.LIGHTSAIL_IP }}
+        username: ubuntu
+        key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+        script: |
+          cd /home/ubuntu/cinema
+          
+          # Pull latest changes
+          git pull origin main
+          
+          # Stop containers
+          docker-compose down
+          
+          # Rebuild and start
+          docker-compose build --no-cache
+          docker-compose up -d
+          
+          # Wait for containers
+          sleep 30
+          
+          # Laravel setup
+          docker exec cinema-app php artisan config:cache
+          docker exec cinema-app php artisan route:cache
+          docker exec cinema-app php artisan migrate --force
+          
+          # Set permissions
+          docker exec cinema-app chown -R www-data:www-data /var/www/storage
+          docker exec cinema-app chmod -R 755 /var/www/storage
+          
+          echo "✅ Deployment completed successfully!"

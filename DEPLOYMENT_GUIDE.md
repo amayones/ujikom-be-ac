@@ -170,6 +170,11 @@ ssh -i ~/.ssh/github_actions ubuntu@localhost
 cd /home/ubuntu
 git clone git@github.com:USERNAME/REPO_NAME.git cinema
 cd cinema
+
+# Configure git untuk deployment yang konsisten
+git config pull.rebase false
+git config user.name "Deploy Bot"
+git config user.email "deploy@cinema.local"
 ```
 
 **Jika masih error saat `ssh -T git@github.com`:**
@@ -235,8 +240,6 @@ EOF
 **docker-compose.yml:**
 ```bash
 cat > docker-compose.yml << 'EOF'
-version: '3.8'
-
 services:
   app:
     build: .
@@ -395,6 +398,9 @@ sudo systemctl restart nginx
 
 ```bash
 cd /home/ubuntu/cinema
+
+# Configure git untuk menghindari divergent branches
+git config pull.rebase false
 
 # Build dan jalankan containers
 docker-compose down

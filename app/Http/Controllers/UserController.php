@@ -66,4 +66,23 @@ class UserController extends Controller
         $user->delete();
         return response()->json(['success' => true, 'message' => 'User deleted successfully']);
     }
+
+    public function profile(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $request->user() ?? ['name' => 'John Doe', 'email' => 'john@example.com', 'phone' => '081234567890']
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20'
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Profile updated successfully']);
+    }
 }

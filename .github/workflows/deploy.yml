@@ -22,8 +22,10 @@ jobs:
         script: |
           cd /home/ubuntu/cinema
           
-          # Pull latest changes
-          git pull origin main
+          # Configure git and force pull
+          git config pull.rebase false
+          git fetch origin
+          git reset --hard origin/main
           
           # Stop containers
           docker-compose down

@@ -8,9 +8,7 @@ return [
         'http://127.0.0.1:5173', 
         'http://localhost:3000',
         'https://ujikom.amayones.my.id',
-        'https://fe-ujikom.amayones.my.id',
-        'https://amayones.my.id',
-        'https://www.amayones.my.id'
+        'https://ujikom-test.amayones.my.id'
     ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],

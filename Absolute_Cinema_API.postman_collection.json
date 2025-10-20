@@ -1,7 +1,7 @@
 {
 	"info": {
 		"name": "Absolute Cinema API",
-		"description": "Complete API collection for Absolute Cinema with Bearer Token authentication",
+		"description": "Complete API collection with Bearer Token authentication. Run Login first to auto-save token.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {
@@ -28,7 +28,7 @@
 	],
 	"item": [
 		{
-			"name": "Authentication",
+			"name": "Auth",
 			"item": [
 				{
 					"name": "Register",
@@ -134,10 +134,10 @@
 			]
 		},
 		{
-			"name": "Admin - Films",
+			"name": "Films - Admin",
 			"item": [
 				{
-					"name": "Get All Films",
+					"name": "Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -149,7 +149,7 @@
 					}
 				},
 				{
-					"name": "Create Film",
+					"name": "Create",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -170,7 +170,7 @@
 					}
 				},
 				{
-					"name": "Get Film by ID",
+					"name": "Get by ID",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -182,7 +182,7 @@
 					}
 				},
 				{
-					"name": "Update Film",
+					"name": "Update",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -203,7 +203,7 @@
 					}
 				},
 				{
-					"name": "Delete Film",
+					"name": "Delete",
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -217,10 +217,10 @@
 			]
 		},
 		{
-			"name": "Admin - Schedules",
+			"name": "Schedules - Admin",
 			"item": [
 				{
-					"name": "Get All Schedules",
+					"name": "Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -232,7 +232,7 @@
 					}
 				},
 				{
-					"name": "Create Schedule",
+					"name": "Create",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -253,7 +253,7 @@
 					}
 				},
 				{
-					"name": "Get Schedule by ID",
+					"name": "Get by ID",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -265,7 +265,7 @@
 					}
 				},
 				{
-					"name": "Update Schedule",
+					"name": "Update",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -286,7 +286,7 @@
 					}
 				},
 				{
-					"name": "Delete Schedule",
+					"name": "Delete",
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -300,10 +300,10 @@
 			]
 		},
 		{
-			"name": "Admin - Users",
+			"name": "Users - Admin",
 			"item": [
 				{
-					"name": "Get All Users",
+					"name": "Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -315,7 +315,7 @@
 					}
 				},
 				{
-					"name": "Create User",
+					"name": "Create",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -336,7 +336,7 @@
 					}
 				},
 				{
-					"name": "Get User by ID",
+					"name": "Get by ID",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -348,7 +348,7 @@
 					}
 				},
 				{
-					"name": "Update User",
+					"name": "Update",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -369,7 +369,7 @@
 					}
 				},
 				{
-					"name": "Delete User",
+					"name": "Delete",
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -383,10 +383,10 @@
 			]
 		},
 		{
-			"name": "Admin - Prices",
+			"name": "Prices - Admin",
 			"item": [
 				{
-					"name": "Get All Prices",
+					"name": "Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -398,7 +398,7 @@
 					}
 				},
 				{
-					"name": "Update Price",
+					"name": "Update",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -421,10 +421,10 @@
 			]
 		},
 		{
-			"name": "Admin - Seats",
+			"name": "Seats - Admin",
 			"item": [
 				{
-					"name": "Get All Seats",
+					"name": "Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -436,7 +436,7 @@
 					}
 				},
 				{
-					"name": "Update Seat",
+					"name": "Update",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -459,10 +459,10 @@
 			]
 		},
 		{
-			"name": "Admin - Cashiers",
+			"name": "Cashiers - Admin",
 			"item": [
 				{
-					"name": "Get All Cashiers",
+					"name": "Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -474,7 +474,7 @@
 					}
 				},
 				{
-					"name": "Create Cashier",
+					"name": "Create",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -495,7 +495,7 @@
 					}
 				},
 				{
-					"name": "Update Cashier",
+					"name": "Update",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -516,7 +516,7 @@
 					}
 				},
 				{
-					"name": "Delete Cashier",
+					"name": "Delete",
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -530,10 +530,10 @@
 			]
 		},
 		{
-			"name": "Owner - Dashboard & Reports",
+			"name": "Owner",
 			"item": [
 				{
-					"name": "Get Dashboard",
+					"name": "Dashboard",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -545,7 +545,7 @@
 					}
 				},
 				{
-					"name": "Get Financial Reports",
+					"name": "Financial Reports",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -557,7 +557,7 @@
 					}
 				},
 				{
-					"name": "Get Performance Reports",
+					"name": "Performance Reports",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -574,7 +574,7 @@
 			"name": "Cashier",
 			"item": [
 				{
-					"name": "Get Dashboard",
+					"name": "Dashboard",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -586,7 +586,7 @@
 					}
 				},
 				{
-					"name": "Create Offline Booking",
+					"name": "Offline Booking",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -607,7 +607,7 @@
 					}
 				},
 				{
-					"name": "Get Transactions",
+					"name": "Transactions",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -654,10 +654,10 @@
 			]
 		},
 		{
-			"name": "Public - Films & Schedules",
+			"name": "Public",
 			"item": [
 				{
-					"name": "Get All Films (Public)",
+					"name": "Films",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -672,7 +672,7 @@
 					}
 				},
 				{
-					"name": "Get Film by ID (Public)",
+					"name": "Film by ID",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -687,7 +687,7 @@
 					}
 				},
 				{
-					"name": "Get All Schedules (Public)",
+					"name": "Schedules",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -702,7 +702,7 @@
 					}
 				},
 				{
-					"name": "Get Schedule by ID (Public)",
+					"name": "Schedule by ID",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -717,7 +717,7 @@
 					}
 				},
 				{
-					"name": "Get Seats by Studio",
+					"name": "Seats by Studio",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -734,7 +734,7 @@
 			]
 		},
 		{
-			"name": "Customer - Orders & Profile",
+			"name": "Customer",
 			"item": [
 				{
 					"name": "Create Order",
@@ -758,7 +758,7 @@
 					}
 				},
 				{
-					"name": "Get My Orders",
+					"name": "My Orders",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -770,7 +770,7 @@
 					}
 				},
 				{
-					"name": "Get Order by ID",
+					"name": "Order by ID",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -782,7 +782,7 @@
 					}
 				},
 				{
-					"name": "Get Profile",
+					"name": "Profile",
 					"request": {
 						"method": "GET",
 						"header": [],

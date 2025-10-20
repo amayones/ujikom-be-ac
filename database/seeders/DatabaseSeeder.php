@@ -18,9 +18,8 @@ class DatabaseSeeder extends Seeder
             FilmSeeder::class,
             StudioSeeder::class,
             PriceSeeder::class,
+            PaymentMethodSeeder::class,
             ScheduleSeeder::class,
-            OrderSeeder::class,
-            ReportSeeder::class,
         ]);
     }
 }

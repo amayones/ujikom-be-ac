@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('prices', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
+            $table->enum('type', ['regular', 'premium', 'vip']);
             $table->decimal('price', 10, 2);
-            $table->foreignId('created_by')->constrained('users');
+            $table->enum('day_type', ['weekday', 'weekend'])->default('weekday');
+            $table->text('description')->nullable();
+            $table->foreignId('created_by')->constrained('users')->default(1);
             $table->timestamps();
         });
     }

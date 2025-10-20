@@ -7,9 +7,17 @@ use Illuminate\Http\Request;
 
 class FilmController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $films = Film::all();
+        $query = Film::orderBy('created_at', 'desc');
+        
+        // Filter by status if provided
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        $films = $query->get();
+        
         return response()->json([
             'success' => true,
             'message' => 'Films retrieved successfully',
@@ -23,14 +31,14 @@ class FilmController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'genre' => 'required|string',
-            'duration' => 'required|integer',
-            'status' => 'required|string',
-            'poster' => 'nullable|string',
-            'director' => 'nullable|string',
+            'duration' => 'required|integer|min:1',
+            'status' => 'required|in:now_playing,coming_soon,ended',
+            'poster' => 'nullable|url',
+            'director' => 'nullable|string|max:255',
             'release_date' => 'nullable|date'
         ]);
         
-        $validated['created_by'] = 1; // Default user ID
+        $validated['created_by'] = $request->user()->id ?? 1;
         $film = Film::create($validated);
         
         return response()->json([
@@ -42,6 +50,8 @@ class FilmController extends Controller
 
     public function show(Film $film)
     {
+        $film->load('creator:id,name');
+        
         return response()->json([
             'success' => true,
             'message' => 'Film retrieved successfully',
@@ -55,10 +65,10 @@ class FilmController extends Controller
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'genre' => 'sometimes|string',
-            'duration' => 'sometimes|integer',
-            'status' => 'sometimes|string',
-            'poster' => 'nullable|string',
-            'director' => 'nullable|string',
+            'duration' => 'sometimes|integer|min:1',
+            'status' => 'sometimes|in:now_playing,coming_soon,ended',
+            'poster' => 'nullable|url',
+            'director' => 'nullable|string|max:255',
             'release_date' => 'nullable|date'
         ]);
         
@@ -67,7 +77,7 @@ class FilmController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Film updated successfully',
-            'data' => $film
+            'data' => $film->fresh()
         ]);
     }
 
@@ -77,7 +87,8 @@ class FilmController extends Controller
         
         return response()->json([
             'success' => true,
-            'message' => 'Film deleted successfully'
+            'message' => 'Film deleted successfully',
+            'data' => null
         ]);
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('schedule_id')->constrained('schedules');
             $table->foreignId('studio_seat_id')->constrained('studio_seats');
-            $table->string('status');
+            $table->enum('status', ['available', 'booked', 'occupied'])->default('available');
             $table->timestamps();
         });
     }

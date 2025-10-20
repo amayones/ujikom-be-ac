@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('films', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('genre'); // Can store multiple genres separated by comma
+            $table->text('genre');
             $table->integer('duration');
             $table->text('description');
-            $table->string('status');
+            $table->enum('status', ['now_playing', 'coming_soon', 'ended'])->default('coming_soon');
             $table->string('poster')->nullable();
             $table->string('director')->nullable();
             $table->date('release_date')->nullable();
-            $table->unsignedBigInteger('created_by')->default(1);
+            $table->foreignId('created_by')->constrained('users')->default(1);
             $table->timestamps();
         });
     }

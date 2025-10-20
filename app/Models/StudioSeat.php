@@ -8,11 +8,7 @@ class StudioSeat extends Model
 {
     protected $fillable = [
         'studio_id',
-        'seat_number',
-        'row',
-        'column',
-        'type',
-        'status',
+        'seat_code'
     ];
 
     public function studio()

@@ -14,7 +14,11 @@ class ScheduleController extends Controller
             ->orderBy('time', 'asc')
             ->get();
 
-        return response()->json(['success' => true, 'data' => $schedules]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Schedules retrieved successfully',
+            'data' => $schedules
+        ]);
     }
 
     public function store(Request $request)
@@ -27,16 +31,24 @@ class ScheduleController extends Controller
             'price_id' => 'required|exists:prices,id'
         ]);
         
-        $validated['created_by'] = 1; // Default user ID
+        $validated['created_by'] = $request->user()->id ?? 1;
         $schedule = Schedule::create($validated);
 
-        return response()->json(['success' => true, 'data' => $schedule->load(['film', 'studio']), 'message' => 'Schedule created successfully'], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Schedule created successfully',
+            'data' => $schedule->load(['film', 'studio'])
+        ], 201);
     }
 
     public function show(Schedule $schedule)
     {
         $schedule->load(['film', 'studio']);
-        return response()->json(['success' => true, 'data' => $schedule]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Schedule retrieved successfully',
+            'data' => $schedule
+        ]);
     }
 
     public function update(Request $request, Schedule $schedule)
@@ -51,12 +63,20 @@ class ScheduleController extends Controller
         
         $schedule->update($validated);
 
-        return response()->json(['success' => true, 'data' => $schedule->load(['film', 'studio']), 'message' => 'Schedule updated successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Schedule updated successfully',
+            'data' => $schedule->load(['film', 'studio'])
+        ]);
     }
 
     public function destroy(Schedule $schedule)
     {
         $schedule->delete();
-        return response()->json(['success' => true, 'message' => 'Schedule deleted successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Schedule deleted successfully',
+            'data' => null
+        ]);
     }
 }

@@ -8,12 +8,7 @@ class OrderDetail extends Model
 {
     protected $fillable = [
         'order_id',
-        'schedule_seat_id',
-        'price',
-    ];
-
-    protected $casts = [
-        'price' => 'decimal:2',
+        'schedule_seat_id'
     ];
 
     public function order()

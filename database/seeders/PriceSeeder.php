@@ -10,45 +10,12 @@ class PriceSeeder extends Seeder
     public function run(): void
     {
         $prices = [
-            // Regular Studio
-            [
-                'type' => 'Regular',
-                'price' => 45000,
-                'day_type' => 'weekday',
-                'description' => 'Harga regular hari biasa'
-            ],
-            [
-                'type' => 'Regular',
-                'price' => 55000,
-                'day_type' => 'weekend',
-                'description' => 'Harga regular akhir pekan'
-            ],
-            // Premium Studio
-            [
-                'type' => 'Premium',
-                'price' => 65000,
-                'day_type' => 'weekday',
-                'description' => 'Harga premium hari biasa'
-            ],
-            [
-                'type' => 'Premium',
-                'price' => 75000,
-                'day_type' => 'weekend',
-                'description' => 'Harga premium akhir pekan'
-            ],
-            // VIP Studio
-            [
-                'type' => 'VIP',
-                'price' => 85000,
-                'day_type' => 'weekday',
-                'description' => 'Harga VIP hari biasa'
-            ],
-            [
-                'type' => 'VIP',
-                'price' => 100000,
-                'day_type' => 'weekend',
-                'description' => 'Harga VIP akhir pekan'
-            ]
+            ['type' => 'regular', 'price' => 45000, 'day_type' => 'weekday', 'description' => 'Harga regular hari biasa', 'created_by' => 1],
+            ['type' => 'regular', 'price' => 55000, 'day_type' => 'weekend', 'description' => 'Harga regular akhir pekan', 'created_by' => 1],
+            ['type' => 'premium', 'price' => 65000, 'day_type' => 'weekday', 'description' => 'Harga premium hari biasa', 'created_by' => 1],
+            ['type' => 'premium', 'price' => 75000, 'day_type' => 'weekend', 'description' => 'Harga premium akhir pekan', 'created_by' => 1],
+            ['type' => 'vip', 'price' => 85000, 'day_type' => 'weekday', 'description' => 'Harga VIP hari biasa', 'created_by' => 1],
+            ['type' => 'vip', 'price' => 100000, 'day_type' => 'weekend', 'description' => 'Harga VIP akhir pekan', 'created_by' => 1]
         ];
 
         foreach ($prices as $priceData) {

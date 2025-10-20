@@ -7,6 +7,7 @@ return [
         'http://localhost:5173', 
         'http://127.0.0.1:5173', 
         'http://localhost:3000',
+        'https://ujikom.amayones.my.id',
         'https://fe-ujikom.amayones.my.id',
         'https://amayones.my.id',
         'https://www.amayones.my.id'

@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('no_hp')->nullable()->change();
-            $table->text('alamat')->nullable()->change();
+            $table->string('phone')->nullable();
+            $table->text('address')->nullable();
             $table->enum('role', ['customer', 'admin', 'owner', 'cashier'])->default('customer');
             $table->timestamps();
         });

@@ -1,391 +1,154 @@
-# Postman API Testing Guide
+# Postman Collection Guide - Absolute Cinema API
 
-## Import Collection
+## Setup
 
-1. Buka Postman
-2. Klik **Import** di pojok kiri atas
-3. Pilih file `Absolute_Cinema_API.postman_collection.json`
-4. Collection akan muncul di sidebar
+### 1. Import Collection
+- Import `Absolute_Cinema_API.postman_collection.json` ke Postman
+- Collection sudah include Bearer Token authentication otomatis
 
-## Setup Environment Variables
+### 2. Environment Variables
+Collection menggunakan 2 variables:
+- `base_url`: `https://be-ujikom.amayones.my.id/api` (production) atau `http://localhost:8000/api` (local)
+- `access_token`: Otomatis tersimpan setelah login
 
-### Base URL
-- Variable: `base_url`
-- Value: `https://be-ujikom.amayones.my.id/api`
+### 3. Authentication Flow
+1. **Login** → Token otomatis tersimpan di `{{access_token}}`
+2. Semua request authenticated menggunakan Bearer Token dari variable
+3. **Logout** → Token dihapus dari server (manual clear variable jika perlu)
 
-### Token
-- Variable: `token`
-- Value: (akan diisi setelah login)
+## Testing Workflow
 
-## Cara Testing API
-
-### 1. Authentication Flow
-
-#### Register (Optional)
+### Step 1: Authentication
 ```
-POST {{base_url}}/auth/register
-Body:
-{
-  "name": "Test User",
-  "email": "test@example.com",
-  "password": "password123",
-  "password_confirmation": "password123"
-}
+1. Buka folder "Authentication"
+2. Run "Login" dengan credentials:
+   - Admin: admin@cinema.com / password
+   - Owner: owner@cinema.com / password
+   - Cashier: cashier@cinema.com / password
+   - Customer: budi@example.com / password
+3. Token otomatis tersimpan, cek di Console: "Token saved: ..."
 ```
 
-#### Login
+### Step 2: Test Admin Endpoints
 ```
-POST {{base_url}}/auth/login
-Body:
-{
-  "email": "admin@cinema.com",
-  "password": "password"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Login berhasil",
-  "data": {
-    "user": {...},
-    "token": "1|xxxxxxxxxxxxx"
-  }
-}
+1. Pastikan sudah login sebagai admin
+2. Test CRUD Films:
+   - Get All Films
+   - Create Film (isi body sesuai kebutuhan)
+   - Update Film (ubah ID di URL)
+   - Delete Film
+3. Test CRUD lainnya: Schedules, Users, Prices, Seats, Cashiers
 ```
 
-**PENTING:** Copy token dari response dan paste ke variable `token` di Postman Environment
-
-#### Get Profile
+### Step 3: Test Owner Endpoints
 ```
-GET {{base_url}}/auth/me
-Headers:
-Authorization: Bearer {{token}}
-```
-
-#### Logout
-```
-POST {{base_url}}/auth/logout
-Headers:
-Authorization: Bearer {{token}}
+1. Login sebagai owner
+2. Test:
+   - Get Dashboard
+   - Get Financial Reports
+   - Get Performance Reports
 ```
 
----
-
-### 2. Films Management
-
-#### Get All Films
+### Step 4: Test Cashier Endpoints
 ```
-GET {{base_url}}/admin/films
-Headers:
-Authorization: Bearer {{token}}
-```
-
-#### Get Film by ID
-```
-GET {{base_url}}/admin/films/1
-Headers:
-Authorization: Bearer {{token}}
+1. Login sebagai cashier
+2. Test:
+   - Get Dashboard
+   - Create Offline Booking
+   - Get Transactions
+   - Print Ticket
 ```
 
-#### Create Film
+### Step 5: Test Public Endpoints
 ```
-POST {{base_url}}/admin/films
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "title": "Avengers: Endgame",
-  "genre": "Action, Sci-Fi",
-  "duration": 181,
-  "director": "Russo Brothers",
-  "cast": "Robert Downey Jr., Chris Evans",
-  "synopsis": "Epic conclusion to the Infinity Saga",
-  "poster": "https://example.com/poster.jpg",
-  "trailer": "https://youtube.com/watch?v=test",
-  "release_date": "2025-01-01",
-  "status": "now_playing",
-  "rating": "13+"
-}
+1. Tidak perlu login (auth: noauth)
+2. Test:
+   - Get All Films (Public)
+   - Get Schedules (Public)
+   - Get Seats by Studio
 ```
 
-#### Update Film
+### Step 6: Test Customer Endpoints
 ```
-PUT {{base_url}}/admin/films/1
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "title": "Updated Title",
-  "duration": 120
-}
+1. Login sebagai customer
+2. Test:
+   - Create Order
+   - Get My Orders
+   - Get Profile
+   - Update Profile
+   - Process Payment
 ```
 
-#### Delete Film
-```
-DELETE {{base_url}}/admin/films/1
-Headers:
-Authorization: Bearer {{token}}
-```
+## Bearer Token Authentication
 
----
-
-### 3. Users Management
-
-#### Get All Users
+### Automatic Token Management
+Collection menggunakan **Collection-level Bearer Token**:
 ```
-GET {{base_url}}/admin/users
-Headers:
-Authorization: Bearer {{token}}
+Authorization: Bearer {{access_token}}
 ```
 
-#### Create User
-```
-POST {{base_url}}/admin/users
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
+### Manual Token Management
+Jika perlu set token manual:
+1. Klik collection → Variables tab
+2. Set `access_token` value dengan token dari login response
+3. Save
 
-Body:
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "phone": "081234567890",
-  "address": "Jakarta",
-  "role": "customer"
-}
-```
-
-#### Update User
-```
-PUT {{base_url}}/admin/users/1
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "name": "Updated Name",
-  "phone": "081234567891"
-}
-```
-
-#### Delete User
-```
-DELETE {{base_url}}/admin/users/1
-Headers:
-Authorization: Bearer {{token}}
-```
-
----
-
-### 4. Schedules Management
-
-#### Get All Schedules
-```
-GET {{base_url}}/admin/schedules
-Headers:
-Authorization: Bearer {{token}}
-```
-
-#### Create Schedule
-```
-POST {{base_url}}/admin/schedules
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "film_id": 1,
-  "studio_id": 1,
-  "price_id": 1,
-  "date": "2025-01-15",
-  "time": "14:00:00"
-}
-```
-
-#### Update Schedule
-```
-PUT {{base_url}}/admin/schedules/1
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "date": "2025-01-16",
-  "time": "16:00:00"
-}
-```
-
-#### Delete Schedule
-```
-DELETE {{base_url}}/admin/schedules/1
-Headers:
-Authorization: Bearer {{token}}
-```
-
----
-
-### 5. Prices Management
-
-#### Get All Prices
-```
-GET {{base_url}}/admin/prices
-Headers:
-Authorization: Bearer {{token}}
-```
-
-#### Update Price
-```
-PUT {{base_url}}/admin/prices/1
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "weekday": 35000,
-  "weekend": 50000
-}
-```
-
----
-
-### 6. Cashiers Management
-
-#### Get All Cashiers
-```
-GET {{base_url}}/admin/cashiers
-Headers:
-Authorization: Bearer {{token}}
-```
-
-#### Create Cashier
-```
-POST {{base_url}}/admin/cashiers
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "name": "Cashier Name",
-  "email": "cashier@example.com",
-  "password": "password123",
-  "phone": "081234567890",
-  "shift": "Morning",
-  "status": "Active"
-}
-```
-
-#### Update Cashier
-```
-PUT {{base_url}}/admin/cashiers/1
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "shift": "Evening",
-  "status": "Inactive"
-}
-```
-
-#### Delete Cashier
-```
-DELETE {{base_url}}/admin/cashiers/1
-Headers:
-Authorization: Bearer {{token}}
-```
-
----
-
-### 7. Seats Management
-
-#### Get Seats by Studio
-```
-GET {{base_url}}/seats/studio/1
-Headers:
-Authorization: Bearer {{token}}
-```
-
-#### Update Seat Status
-```
-PUT {{base_url}}/admin/seats/1
-Headers:
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-Body:
-{
-  "status": "maintenance"
-}
-```
-
-**Status Options:**
-- `available`
-- `occupied`
-- `maintenance`
-
----
+### Override Authentication
+Beberapa endpoint (Public) menggunakan `"auth": "noauth"` untuk override collection-level auth.
 
 ## Response Format
 
-Semua response menggunakan format standar:
-
-### Success Response
+Semua endpoint menggunakan format standar:
 ```json
 {
   "success": true,
-  "message": "Operation successful",
+  "message": "Success message",
   "data": {...}
 }
 ```
 
-### Error Response
+Error response:
 ```json
 {
   "success": false,
-  "message": "Error message",
-  "errors": {...}
+  "message": "Error message"
 }
 ```
 
----
+## Test Accounts
 
-## Testing Tips
+| Role     | Email                | Password |
+|----------|---------------------|----------|
+| Admin    | admin@cinema.com    | password |
+| Owner    | owner@cinema.com    | password |
+| Cashier  | cashier@cinema.com  | password |
+| Cashier  | kasir2@cinema.com   | password |
+| Customer | budi@example.com    | password |
+| Customer | john@example.com    | password |
+| Customer | jane@example.com    | password |
 
-1. **Selalu login dulu** untuk mendapatkan token
-2. **Copy token** ke environment variable `token`
-3. **Test endpoint** secara berurutan (GET → POST → PUT → DELETE)
-4. **Perhatikan response** untuk memastikan data sesuai
-5. **Gunakan ID yang valid** dari response GET sebelumnya
+## Tips
 
----
+1. **Auto-save Token**: Script di request "Login" otomatis menyimpan token
+2. **Check Console**: Lihat Postman Console untuk debug token
+3. **Token Expiry**: Jika dapat 401 Unauthorized, login ulang
+4. **Environment**: Ganti `base_url` untuk testing local/production
+5. **Organized Folders**: Endpoints dikelompokkan berdasarkan role
 
-## Default Credentials
+## Common Issues
 
-### Admin
-- Email: `admin@cinema.com`
-- Password: `password`
+### 401 Unauthorized
+- Token expired atau invalid
+- Solution: Login ulang
 
-### Owner
-- Email: `owner@cinema.com`
-- Password: `password`
+### 403 Forbidden
+- User tidak punya akses ke endpoint
+- Solution: Login dengan role yang sesuai
 
-### Cashier
-- Email: `cashier@cinema.com`
-- Password: `password`
+### 422 Validation Error
+- Request body tidak sesuai validasi
+- Solution: Cek required fields di body
 
-### Customer
-- Email: `budi@example.com`
-- Password: `password`
+### CORS Error
+- Hanya terjadi di browser, tidak di Postman
+- Postman tidak terpengaruh CORS policy

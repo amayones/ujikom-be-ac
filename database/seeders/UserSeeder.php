@@ -11,50 +11,60 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $users = [
-            // Admin
             [
-                'name' => 'Admin Cinema',
+                'name' => 'Admin Bioskop',
                 'email' => 'admin@cinema.com',
                 'password' => Hash::make('password'),
+                'phone' => '081234567890',
+                'address' => 'Jl. Admin No. 123, Jakarta',
                 'role' => 'admin'
             ],
-            // Owner
             [
-                'name' => 'Owner Cinema',
+                'name' => 'Pemilik Bioskop',
                 'email' => 'owner@cinema.com',
                 'password' => Hash::make('password'),
+                'phone' => '081234567891',
+                'address' => 'Jl. Pemilik No. 456, Jakarta',
                 'role' => 'owner'
             ],
-            // Kasir
             [
-                'name' => 'Kasir Satu',
-                'email' => 'kasir1@cinema.com',
+                'name' => 'Kasir Bioskop',
+                'email' => 'cashier@cinema.com',
                 'password' => Hash::make('password'),
+                'phone' => '081234567892',
+                'address' => 'Jl. Kasir No. 789, Jakarta',
                 'role' => 'cashier'
             ],
             [
                 'name' => 'Kasir Dua',
                 'email' => 'kasir2@cinema.com',
                 'password' => Hash::make('password'),
+                'phone' => '081234567894',
+                'address' => 'Jl. Kasir No. 790, Jakarta',
                 'role' => 'cashier'
             ],
-            // Pelanggan
+            [
+                'name' => 'Budi Santoso',
+                'email' => 'budi@example.com',
+                'password' => Hash::make('password'),
+                'phone' => '081234567893',
+                'address' => 'Jl. Pelanggan No. 321, Jakarta',
+                'role' => 'customer'
+            ],
             [
                 'name' => 'John Doe',
                 'email' => 'john@example.com',
                 'password' => Hash::make('password'),
+                'phone' => '081234567895',
+                'address' => 'Jl. Customer No. 111, Jakarta',
                 'role' => 'customer'
             ],
             [
                 'name' => 'Jane Smith',
                 'email' => 'jane@example.com',
                 'password' => Hash::make('password'),
-                'role' => 'customer'
-            ],
-            [
-                'name' => 'Bob Wilson',
-                'email' => 'bob@example.com',
-                'password' => Hash::make('password'),
+                'phone' => '081234567896',
+                'address' => 'Jl. Customer No. 222, Jakarta',
                 'role' => 'customer'
             ]
         ];
